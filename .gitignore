@@ -26,3 +26,19 @@
 *.exe
 *.out
 *.app
+
+# Audio files
+*.mp3
+*.wav
+
+# Visual Studio Garbage
+*.opensdf
+*.sdf
+*.sln
+*.vcproj
+*.dsp
+*.vcxproj*
+
+# Visual Studio Subfolders and executables
+Debug/
+.vs/
