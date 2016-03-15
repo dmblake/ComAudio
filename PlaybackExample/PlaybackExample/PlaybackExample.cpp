@@ -9,6 +9,7 @@ Copyright (c) 1999-2012 Un4seen Developments Ltd.
 #include <commctrl.h>
 #include <stdio.h>
 #include <bass.h>
+#include "CircularBuffer.h"
 
 HWND win = NULL;
 
@@ -279,15 +280,20 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	char file[MAX_PATH] = "C:\\Users\\Administrator\\Desktop\\Birdland.mp3";
 	HSTREAM str;
 
+	CircularBuffer rb(500000);
+
 	HANDLE hf = CreateFile("C:\\Users\\Administrator\\Desktop\\Birdland.mp3", GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-	char buf[50000];
+	char buf[500000];
 	DWORD bytesRead = 0;
-	ReadFile(hf, buf, 50000, &bytesRead, 0);
-	
+	ReadFile(hf, buf, 500000, &bytesRead, 0);
+	rb.Write(buf, 500000);
+	char realBuf[500000];
+	rb.Read(realBuf, 50000);
+
 
 	if (!BASS_Init(-1, 44100, 0, win, NULL))
 		Error("Can't initialize device");
-	if (str = BASS_StreamCreateFile(TRUE, buf, 0, 50000, 0)) {
+	if (str = BASS_StreamCreateFile(TRUE, realBuf, 0, 500000, 0)) {
 		strc++;
 		strs = (HSTREAM*)malloc(sizeof(*strs));
 		strs[strc - 1] = str;
@@ -298,8 +304,16 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	else
 		Error("Can't open stream");
+	rb.Read(realBuf+50000, 50000);
+	rb.Read(realBuf+50000*2, 50000);
+	rb.Read(realBuf + 50000 * 3, 50000);
 
-	Sleep(5000);
+	rb.Read(realBuf + 50000 * 4, 50000);
+
+	rb.Read(realBuf + 50000 * 5, 50000);
+
+	
+	Sleep(500000);
 
 	OutputDebugString("After Dialog\n");
 
