@@ -278,12 +278,16 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	char file[MAX_PATH] = "C:\\Users\\Administrator\\Desktop\\Birdland.mp3";
 	HSTREAM str;
-	OPENFILENAME ofn;
-	ofn.lpstrFilter = "Streamable files (wav/aif/mp3/mp2/mp1/ogg)\0*.wav;*.aif;*.mp3;*.mp2;*.mp1;*.ogg\0All files\0*.*\0\0";
-	ofn.lpstrFile = file;
+
+	HANDLE hf = CreateFile("C:\\Users\\Administrator\\Desktop\\Birdland.mp3", GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	char buf[50000];
+	DWORD bytesRead = 0;
+	ReadFile(hf, buf, 50000, &bytesRead, 0);
+	
+
 	if (!BASS_Init(-1, 44100, 0, win, NULL))
 		Error("Can't initialize device");
-	if (str = BASS_StreamCreateFile(FALSE, file, 0, 0, 0)) {
+	if (str = BASS_StreamCreateFile(TRUE, buf, 0, 50000, 0)) {
 		strc++;
 		strs = (HSTREAM*)malloc(sizeof(*strs));
 		strs[strc - 1] = str;
