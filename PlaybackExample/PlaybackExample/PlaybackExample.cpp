@@ -20,6 +20,26 @@ int modc = 0;
 HSAMPLE *sams = NULL;
 int samc = 0;
 
+void CALLBACK fileCloseProc(void *user)
+{
+}
+
+QWORD CALLBACK fileOpenProc(void *user)
+{
+	return 0;
+}
+
+DWORD CALLBACK fileReadProc(void *buffer, DWORD length, void *user)
+{
+	return ((CircularBuffer*)user)->Read((char*)buffer, length);
+}
+
+BOOL CALLBACK fileSeekProc(QWORD offset, void* user)
+{
+	return true;
+}
+
+BASS_FILEPROCS fp = { fileCloseProc, fileOpenProc, fileReadProc, fileSeekProc };
 // display error messages
 void Error(const char *es)
 {
@@ -37,7 +57,9 @@ DWORD CALLBACK readFromFile(HSTREAM handle, void* buf, DWORD len, void* user)
 	return c;
 	*/
 	CircularBuffer *cb = (CircularBuffer*)user;
-	return cb->Read((char*)buf, len);
+	char * b = (char*)buf;
+	DWORD ret = cb->Read(b, len);
+	return ret;
 }
 
 
@@ -54,28 +76,39 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// display the window
 	//DialogBox(hInstance, MAKEINTRESOURCE(1000), NULL, &dialogproc);
 
-	char file[MAX_PATH] = "C:\\Users\\Administrator\\Desktop\\Birdland.mp3";
 	HSTREAM str = 0;
 
 	CircularBuffer rb(500000);
 
-	HANDLE hf = CreateFile("C:\\Users\\Administrator\\Desktop\\Birdland.mp3", GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-	char buf[500000];
+	HANDLE hf = CreateFile("C:\\Users\\Administrator\\Desktop\\Famous.mp3", GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	char buf[1000000];
 	DWORD bytesRead = 0;
-	ReadFile(hf, buf, 500000, &bytesRead, 0);
-	rb.Write(buf, 500000);
 
+	while (ReadFile(hf, buf, 5000, &bytesRead, 0)) {
+		if (rb.Write(buf, bytesRead) == 0)
+			break;
+	}
+	
 
 	if (!BASS_Init(-1, 44100, 0, win, NULL))
 		Error("Can't initialize device");
-
-	if (!(str = BASS_StreamCreate(44100, 2, 0, readFromFile, &rb)))
+	
+	if (!(str = BASS_StreamCreateFileUser (STREAMFILE_BUFFER, BASS_STREAM_BLOCK | BASS_STREAM_RESTRATE | BASS_ASYNCFILE, &fp, &rb)))
 		Error("Can't open stream");
-	if (!BASS_ChannelPlay(str, FALSE))
+	BASS_ChannelSetAttribute(str, BASS_ATTRIB_VOL, 1.0);
+	if (!BASS_ChannelPlay(str, TRUE))
 		Error("Can't open stream");
 
+	DWORD totalBytesRead;
+	while (1) {
+		while (ReadFile(hf, buf, 1, &bytesRead, 0)) {
+			while (rb.Write(buf, bytesRead) == 0) {}
+			
+		}
+	}
+	
 	/*
-	if (str = BASS_StreamCreateFile(TRUE, realBuf, 0, 500000, 0)) {
+	if (str = BASS_StreamCreateFile(TRUE, buf, 0, 500000, 0)) {
 		strc++;
 		strs = (HSTREAM*)malloc(sizeof(*strs));
 		strs[strc - 1] = str;
@@ -85,9 +118,9 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	else
 		Error("Can't open stream");
-	*/
+		*/
 	
-	Sleep(500000);
+//	Sleep(500000);
 
 	OutputDebugString("After Dialog\n");
 

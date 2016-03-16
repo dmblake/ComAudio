@@ -135,3 +135,8 @@ int CircularBuffer::Read(char * buf, int len)
 	_readPtr = (_readPtr + len) % _size;
 	return len;
 }
+
+int CircularBuffer::GetAvailable()
+{
+	return (_size - _writeBytesAvailable);
+}

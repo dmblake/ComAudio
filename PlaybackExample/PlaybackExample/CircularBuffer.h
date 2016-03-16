@@ -16,4 +16,5 @@ public:
 	~CircularBuffer();
 	int Write(char * buf, int len);
 	int Read(char * buf, int len);
+	int GetAvailable();
 };
