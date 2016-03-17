@@ -12,9 +12,20 @@ TARGET = CommAudio
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp
 
-HEADERS  += mainwindow.h
+SOURCES += main.cpp\
+        mainwindow.cpp \
+    server.cpp \
+    client.cpp \
+    network.cpp
+
+HEADERS  += mainwindow.h \
+    server.h \
+    main.h \
+    shared.h \
+    client.h \
+    network.h
+
+LIBS += -LC:\dicom\lib -lws2_32 -lwsock32
 
 FORMS    += mainwindow.ui
