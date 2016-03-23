@@ -6,7 +6,9 @@ SOCKET ClientMulticastSocket;
 struct ip_mreq ClientMreq;
 struct sockaddr_in serverAddr;
 struct sockaddr_in peerAddr;
+HANDLE hMulticastThread;
 
+extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
 void startFileTransfer()
@@ -14,6 +16,23 @@ void startFileTransfer()
     if (!setupTcpSocket())
     {
         qDebug() << "Failed to setup TCP Socket";
+    }
+}
+
+void startClientMulticastSession()
+{
+    WSAEVENT ThreadEvent;
+
+    if (!setupClientMulticastSocket())
+    {
+        qDebug() << "failed to setup client multicast socket";
+    }
+
+    // Create a worker thread to service completed I/O requests
+    if ((hMulticastThread = CreateThread(NULL, 0, ClientMcastThread, (LPVOID)ThreadEvent, 0, NULL)) == NULL)
+    {
+        qDebug() << "CreateThread() failed with error " << GetLastError();
+        return;
     }
 }
 
@@ -26,7 +45,7 @@ bool setupTcpSocket()
 
     if ((TcpSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
-        qWarning() << "Failed to create TCP Socket";
+        qDebug() << "Failed to create TCP Socket";
         return false;
     }
 
@@ -40,7 +59,7 @@ bool setupTcpSocket()
     }
     memcpy((char *)&serverAddr.sin_addr, hp->h_addr, hp->h_length);
 
-    if (connect(TcpSocket, (struct sockaddr*)&serverAddr, sizeof(sockaddr_in)) == -1)
+    if (connect(TcpSocket, (struct sockaddr*)&serverAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to connect to the server";
         closesocket(TcpSocket);
@@ -129,6 +148,87 @@ bool setupClientMulticastSocket()
         return false;
     }
     return true;
+}
+
+DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
+{
+    DWORD Index;
+    DWORD Flags = 0;
+    DWORD RecvBytes = 0;
+    WSAEVENT EventArray[1];
+    LPSOCKET_INFORMATION SocketInfo;
+    int addrSize = sizeof(sockaddr_in);
+
+    if ((SocketInfo = (LPSOCKET_INFORMATION)GlobalAlloc(GPTR, sizeof(SOCKET_INFORMATION))) == NULL)
+    {
+        qDebug() << "GlobalAlloc() failed with error %d\n" << GetLastError();
+        ExitThread(3);
+    }
+
+    SocketInfo->Socket = ClientMulticastSocket;
+    ZeroMemory(&(SocketInfo->Overlapped), sizeof(WSAOVERLAPPED));
+    SocketInfo->DataBuf.len = BUF_LEN;
+    SocketInfo->DataBuf.buf = SocketInfo->Buffer;
+
+    if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
+            &addrSize, &(SocketInfo->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
+    {
+        if (WSAGetLastError() != WSA_IO_PENDING)
+        {
+            qDebug() << "WSARecv() failed with error" << WSAGetLastError();
+        }
+    }
+    EventArray[0] = WSACreateEvent();
+
+    while (TRUE)
+    {
+        Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, WSA_INFINITE, TRUE);
+        if (Index == WAIT_IO_COMPLETION)
+        {
+            // An overlapped request completion routine
+            // just completed. Continue servicing more completion routines.
+            continue;
+        }
+        else
+        {
+            // A bad error occurred: stop processing!
+            // If we were also processing an event
+            // object, this could be an index to the event array.
+            closesocket(ClientMulticastSocket);
+            ExitThread(3);
+        }
+    }
+}
+
+void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
+{
+    DWORD RecvBytes = 0;
+    DWORD Flags = 0;
+    int addrSize = sizeof(sockaddr_in);
+
+    // Reference the WSAOVERLAPPED structure as a SOCKET_INFORMATION structure
+    LPSOCKET_INFORMATION SI = (LPSOCKET_INFORMATION)Overlapped;
+
+    if (Error != 0 || BytesTransferred == 0)
+    {
+        qDebug() << "error !=0 and bytes transferred == 0, closing socket";
+        closesocket(ClientMulticastSocket);
+        GlobalFree(SI);
+        return;
+    }
+
+    //processUdpIO(SI->Buffer, BytesTransferred);
+
+    ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
+
+    if (WSARecvFrom(SI->Socket, &(SI->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
+            &addrSize, &(SI->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
+    {
+        if (WSAGetLastError() != WSA_IO_PENDING)
+        {
+            qDebug() << "WSARecv()1 failed with error " << WSAGetLastError();
+        }
+    }
 }
 
 void clientCleanup()

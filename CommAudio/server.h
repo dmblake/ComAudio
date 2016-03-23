@@ -9,6 +9,8 @@ bool setupListenSocket();
 DWORD WINAPI FileTransferThread(LPVOID lpParameter);
 bool setupServerMulticastSocket();
 void serverCleanup();
+void startServerMulticastSession();
+DWORD WINAPI ServerMcastThread(LPVOID lpParameter);
 
 #define MCAST_TTL 2
 

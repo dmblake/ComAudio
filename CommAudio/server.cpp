@@ -4,13 +4,48 @@ SOCKET ListenSocket;
 SOCKET ServerMulticastSocket;
 HANDLE hFileTransferThread;
 struct ip_mreq ServerMreq;
+
+extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
 void startServer()
 {
+    //Start the file transfer thread
+    //Sets up the listen socket and accepts incoming connections
+    if (!setupListenSocket())
+    {
+        qDebug() << "failed to setup ListenSocket";
+    }
+
     if((hFileTransferThread = CreateThread(NULL, 0, FileTransferThread, NULL, 0, NULL)) == NULL)
     {
         qDebug() << "create FileTransferThread failed";
+    }
+
+    startServerMulticastSession();
+}
+
+void startServerMulticastSession()
+{
+    if (!setupServerMulticastSocket())
+    {
+        qDebug() << "failed to setup multicast socket";
+    }
+
+    // Fill in the sockaddr for the multicast group
+    hostent* hp;
+    memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
+    mcastAddr.sin_family = AF_INET;
+    mcastAddr.sin_port = htons(MCAST_PORT);
+    if ((hp = gethostbyname(MCAST_IP)) == NULL)
+    {
+        qDebug() << "Unknown mcast address";
+    }
+    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
+
+    if (CreateThread(NULL, 0, ServerMcastThread, NULL, 0, NULL) == NULL)
+    {
+        qDebug() << "ServerMcastThread could not be created";
     }
 }
 
@@ -43,20 +78,55 @@ bool setupListenSocket()
     return true;
 }
 
-DWORD WINAPI FileTransferThread(LPVOID lpParameter)
+DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
 {
     SOCKET AcceptSocket;
-    if (!setupListenSocket())
-    {
-        ExitThread(3);
-    }
     while(TRUE)
     {
         AcceptSocket = createAcceptSocket();
-        // close accept socket right away for testing
+        if (CreateThread(NULL, 0, FileTransferThread, (void*)AcceptSocket, 0, NULL) == NULL)
+        {
+            qDebug() << "File transfer Socket could not be created";
+        }
+        //close accept socket after passing a copy to the thread
         closesocket(AcceptSocket);
     }
 }
+
+DWORD WINAPI FileTransferThread(LPVOID lpParameter)
+{
+    SOCKET fileTransferSocket = (SOCKET)lpParameter;
+    //send stuff here and reveive stuff here
+
+    //close socket right away for testing
+    closesocket(fileTransferSocket);
+}
+
+DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
+{
+    DWORD nBytesRead;
+    HANDLE hFile;
+    hFile = CreateFile
+            (L"C:/Users/jose/Desktop/warpeace.txt",               // file to open
+            GENERIC_READ,          // open for reading
+            FILE_SHARE_READ,       // share for reading
+            NULL,                  // default security
+            OPEN_EXISTING,         // existing file only
+            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, // normal file
+            NULL);
+
+    char sendBuff[BUF_LEN];
+    while (ReadFile(hFile, sendBuff, BUF_LEN, &nBytesRead, NULL))
+    {
+        memset((char *)sendBuff, 0, BUF_LEN);
+        // Sending Datagrams
+        if (nBytesRead > 0)
+        {
+            sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
+        }
+    }
+}
+
 
 SOCKET createAcceptSocket()
 {
@@ -78,6 +148,7 @@ SOCKET createAcceptSocket()
  */
 bool setupServerMulticastSocket()
 {
+    bool flag;
     if ((ServerMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
         qDebug() << "Failed to create Multicast Socket: " << WSAGetLastError();
@@ -114,6 +185,13 @@ bool setupServerMulticastSocket()
         closesocket(ServerMulticastSocket);
         return false;
     }
+
+    // For testing allows the sender to receive as well
+    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&flag, sizeof(flag)) == SOCKET_ERROR)
+        {
+            qDebug() << "setsockopt(IP_MULTICAST_LOOP) failed: " << WSAGetLastError();
+            return false;
+        }
 
     return true;
 }

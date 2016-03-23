@@ -8,6 +8,8 @@
 #include "client.h"
 #include <iostream>
 
+bool server = true;
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -16,8 +18,17 @@ int main(int argc, char *argv[])
 
     startWinsock();
     fillMyAddrStruct();
-    //startServer();
-    startFileTransfer();
+    fillMcastAddrStruct();
+
+    if (server)
+    {
+        startServer();
+    }
+    else
+    {
+        startFileTransfer();
+    }
+
     //setUdpSocket();
 
     int r = a.exec();

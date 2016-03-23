@@ -5,5 +5,6 @@
 
 void startWinsock();
 void fillMyAddrStruct();
+void fillMcastAddrStruct();
 
 #endif // NETWORK_H
