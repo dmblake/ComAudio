@@ -59,9 +59,13 @@ bool setupTcpSocket()
     }
     memcpy((char *)&serverAddr.sin_addr, hp->h_addr, hp->h_length);
 
+    int enable=1;
+    setsockopt(TcpSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
+
+
     if (connect(TcpSocket, (struct sockaddr*)&serverAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
-        qDebug() << "Failed to connect to the server";
+        qDebug() << "Failed to connect to the server" << WSAGetLastError();
         closesocket(TcpSocket);
         WSACleanup();
         return false;
@@ -75,7 +79,7 @@ bool setupTcpSocket()
 }
 
 /*
- * Creates and binds the UDP Socket.
+ * Creates and binds the UDP Socket for mic.
  * Fills the peerAddr sockaddr_in.
  */
 bool setUdpSocket()
@@ -108,6 +112,10 @@ bool setUdpSocket()
         closesocket(UdpSocket);
         return false;
     }
+    else
+    {
+        qDebug() << "accept socket created";
+    }
 
     // close accept socket right away for testing
     closesocket(UdpSocket);
@@ -125,6 +133,9 @@ bool setupClientMulticastSocket()
         closesocket((ClientMulticastSocket));
         return false;
     }
+
+    int enable = 1;
+    setsockopt(ClientMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
 
     // Change the port in the myAddr struct to the multicast port
     myAddr.sin_port = MCAST_PORT;
@@ -152,6 +163,7 @@ bool setupClientMulticastSocket()
 
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
 {
+    qDebug() << "client mcast thread started";
     DWORD Index;
     DWORD Flags = 0;
     DWORD RecvBytes = 0;
@@ -177,7 +189,10 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         {
             qDebug() << "WSARecv() failed with error" << WSAGetLastError();
         }
+        qDebug() << "wsarecvfrom called";
     }
+    else
+
     EventArray[0] = WSACreateEvent();
 
     while (TRUE)
@@ -202,6 +217,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
 
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
 {
+    qDebug() << "inside completion routine";
     DWORD RecvBytes = 0;
     DWORD Flags = 0;
     int addrSize = sizeof(sockaddr_in);
@@ -217,7 +233,10 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
         return;
     }
 
-    //processUdpIO(SI->Buffer, BytesTransferred);
+    //process io here
+    //SI->Buffer
+    //BytesTransferred
+    qDebug() << "Received data" << SI->Buffer;
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 

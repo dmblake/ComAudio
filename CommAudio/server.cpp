@@ -57,6 +57,8 @@ bool setupListenSocket()
         qDebug() << "Failed to get a socket";
         return false;
     }
+    int enable = 1;
+    setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
 
     // Change the port in the myAddr struct to the default port
     myAddr.sin_port = PORT;
@@ -107,24 +109,42 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     DWORD nBytesRead;
     HANDLE hFile;
     hFile = CreateFile
-            (L"C:/Users/jose/Desktop/warpeace.txt",               // file to open
-            GENERIC_READ,          // open for reading
-            FILE_SHARE_READ,       // share for reading
-            NULL,                  // default security
+            (L"\D:Dict.txt",               // file to open
+            GENERIC_READ,
+            0,
+            (LPSECURITY_ATTRIBUTES)NULL,       // share for reading
             OPEN_EXISTING,         // existing file only
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, // normal file
-            NULL);
+            FILE_ATTRIBUTE_NORMAL, // normal file
+            (HANDLE)NULL);
 
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        qDebug() << GetLastError();
+    }
+    else
+    {
+        qDebug() << "hfile ok";
+    }
     char sendBuff[BUF_LEN];
+    int ret;
     while (ReadFile(hFile, sendBuff, BUF_LEN, &nBytesRead, NULL))
     {
-        memset((char *)sendBuff, 0, BUF_LEN);
+
         // Sending Datagrams
+
         if (nBytesRead > 0)
         {
+            //qDebug() << sendBuff;
             sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
         }
+        else
+        {
+            qDebug() << "file close and thread ends";
+            CloseHandle(hFile);
+            ExitThread(3);
+        }
     }
+    qDebug() << "finished sending";
 }
 
 
@@ -156,6 +176,8 @@ bool setupServerMulticastSocket()
         return false;
     }
 
+    int enable=1;
+    setsockopt(ServerMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
     // Change the port in the myAddr struct to the multicast port
     myAddr.sin_port = MCAST_PORT;
 
@@ -177,14 +199,17 @@ bool setupServerMulticastSocket()
         closesocket(ServerMulticastSocket);
         return false;
     }
+/*
+    char mcast_ip[512] = MCAST_IP;
+
 
     // Setting TTL (hops)
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&MCAST_IP, sizeof(MCAST_TTL)) == SOCKET_ERROR)
+    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&mcast_ip, sizeof(mcast_ip)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
         closesocket(ServerMulticastSocket);
         return false;
-    }
+    }*/
 
     // For testing allows the sender to receive as well
     if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&flag, sizeof(flag)) == SOCKET_ERROR)

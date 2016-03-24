@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <QDebug>
 
-#define PORT            9000
+#define PORT            7000
 #define MCAST_PORT      9001
 #define MIC_PORT        9002
 #define SERVER_IP       "127.0.0.1"
