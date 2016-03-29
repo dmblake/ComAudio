@@ -16,6 +16,10 @@ void startServer()
     {
         qDebug() << "failed to setup ListenSocket";
     }
+    else
+    {
+        qDebug() << "Listen Socket OK";
+    }
 
     if((hFileTransferThread = CreateThread(NULL, 0, FileTransferThread, NULL, 0, NULL)) == NULL)
     {
@@ -29,7 +33,11 @@ void startServerMulticastSession()
 {
     if (!setupServerMulticastSocket())
     {
-        qDebug() << "failed to setup multicast socket";
+        qDebug() << "failed to setup multicast socket" << WSAGetLastError();
+    }
+    else
+    {
+        qDebug() << "serverMcastSocket OK";
     }
 
     // Fill in the sockaddr for the multicast group
@@ -47,6 +55,10 @@ void startServerMulticastSession()
     {
         qDebug() << "ServerMcastThread could not be created";
     }
+    else
+    {
+        qDebug() << "ServerMcastThread started";
+    }
 }
 
 bool setupListenSocket()
@@ -61,7 +73,7 @@ bool setupListenSocket()
     setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
 
     // Change the port in the myAddr struct to the default port
-    myAddr.sin_port = PORT;
+    myAddr.sin_port = htons(PORT);
 
     // Bind the listen socket
     if (bind(ListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
@@ -77,18 +89,25 @@ bool setupListenSocket()
         qDebug() << "listen() failed";
         return false;
     }
+
+    if (CreateThread(NULL, 0, AcceptSocketThread, NULL, 0, NULL) == NULL)
+    {
+        qDebug() << "AcceptSocket Thread could not be created";
+    }
+
     return true;
 }
 
 DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
 {
+    qDebug() << "inside accept socket thread";
     SOCKET AcceptSocket;
     while(TRUE)
     {
         AcceptSocket = createAcceptSocket();
         if (CreateThread(NULL, 0, FileTransferThread, (void*)AcceptSocket, 0, NULL) == NULL)
         {
-            qDebug() << "File transfer Socket could not be created";
+            qDebug() << "File transfer (Accept) Socket could not be created";
         }
         //close accept socket after passing a copy to the thread
         closesocket(AcceptSocket);
@@ -134,7 +153,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 
         if (nBytesRead > 0)
         {
-            //qDebug() << sendBuff;
+            qDebug() << sendBuff;
             sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
         }
         else
@@ -168,6 +187,7 @@ SOCKET createAcceptSocket()
  */
 bool setupServerMulticastSocket()
 {
+    char mcast_ip[512] = MCAST_IP;
     bool flag;
     if ((ServerMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
@@ -179,7 +199,7 @@ bool setupServerMulticastSocket()
     int enable=1;
     setsockopt(ServerMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
     // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = MCAST_PORT;
+    myAddr.sin_port = htons(PORT);
 
     if (bind(ServerMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
@@ -189,7 +209,7 @@ bool setupServerMulticastSocket()
 
     // Setting the local IP address of interface and the multicast address group
     ServerMreq.imr_interface.s_addr = INADDR_ANY;
-    ServerMreq.imr_multiaddr.s_addr = inet_addr(MCAST_IP);
+    ServerMreq.imr_multiaddr.s_addr = inet_addr(mcast_ip);
 
 
     // Joining the Multicast group
@@ -199,17 +219,14 @@ bool setupServerMulticastSocket()
         closesocket(ServerMulticastSocket);
         return false;
     }
-/*
-    char mcast_ip[512] = MCAST_IP;
-
-
-    // Setting TTL (hops)
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&mcast_ip, sizeof(mcast_ip)) == SOCKET_ERROR)
+    int ttl = 5;
+    //Setting TTL (hops)
+    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
         closesocket(ServerMulticastSocket);
         return false;
-    }*/
+    }
 
     // For testing allows the sender to receive as well
     if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&flag, sizeof(flag)) == SOCKET_ERROR)

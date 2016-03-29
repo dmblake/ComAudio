@@ -11,6 +11,7 @@ bool setupServerMulticastSocket();
 void serverCleanup();
 void startServerMulticastSession();
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter);
+DWORD WINAPI AcceptSocketThread(LPVOID lpParameter);
 
 #define MCAST_TTL 2
 
