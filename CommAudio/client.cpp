@@ -21,11 +21,16 @@ void startFileTransfer()
 
 void startClientMulticastSession()
 {
+    qDebug() << "startClientMulticastSession called";
     WSAEVENT ThreadEvent;
 
     if (!setupClientMulticastSocket())
     {
         qDebug() << "failed to setup client multicast socket";
+    }
+    else
+    {
+        qDebug() << "Mcast socket ok";
     }
 
     // Create a worker thread to service completed I/O requests
@@ -45,7 +50,7 @@ bool setupTcpSocket()
 
     if ((TcpSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
-        qDebug() << "Failed to create TCP Socket";
+        qDebug() << "Failed to create TCP Socket " << WSAGetLastError();
         return false;
     }
 
@@ -104,7 +109,7 @@ bool setUdpSocket()
     memcpy((char *)&peerAddr.sin_addr, hp->h_addr, hp->h_length);
 
     // Change the port in the myAddr struct to the MIC port
-    myAddr.sin_port = MIC_PORT;
+    myAddr.sin_port = htons(MIC_PORT);
 
     if (bind(UdpSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
@@ -127,6 +132,7 @@ bool setUdpSocket()
  */
 bool setupClientMulticastSocket()
 {
+    char mcast_ip[512] = MCAST_IP;
     if ((ClientMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
         qDebug() << "Failed to create Client Multicast Socket: " << WSAGetLastError();
@@ -137,19 +143,26 @@ bool setupClientMulticastSocket()
     int enable = 1;
     setsockopt(ClientMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
 
-    // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = MCAST_PORT;
-
-    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    //
+    hostent* hp;
+    memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
+    mcastAddr.sin_family = AF_INET;
+    mcastAddr.sin_port = htons(MCAST_PORT);
+    if ((hp = gethostbyname(MCAST_IP)) == NULL)
     {
-        qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
-        return false;
+        qDebug() << "Unknown mcast address";
     }
+    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
+    qDebug() << "MCAST addr: " << hp->h_name;
+
+    // Change the port in the myAddr struct to the multicast port
+    myAddr.sin_port = htons(PORT);
+
+
 
     // Setting the local IP address of interface and the multicast address group
     ClientMreq.imr_interface.s_addr = INADDR_ANY;
-    ClientMreq.imr_multiaddr.s_addr = inet_addr(MCAST_IP);
-
+    ClientMreq.imr_multiaddr.s_addr = inet_addr(mcast_ip);
 
     // Joining the Multicast group
     if (setsockopt(ClientMulticastSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&ClientMreq, sizeof(ClientMreq)) == SOCKET_ERROR)
@@ -157,6 +170,25 @@ bool setupClientMulticastSocket()
         qDebug() << "setsockopt(IP_ADD_MEMBERSHIP) failed: " << WSAGetLastError();
         closesocket(ClientMulticastSocket);
         return false;
+    }
+
+    // Setting TTL (hops)
+    int ttl = 5;
+    if (setsockopt(ClientMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) == SOCKET_ERROR)
+    {
+        qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
+        closesocket(ClientMulticastSocket);
+        return false;
+    }
+
+    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    {
+        qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
+        return false;
+    }
+    else
+    {
+        qDebug() << "client mcast socket bind() ok";
     }
     return true;
 }
@@ -189,19 +221,32 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         {
             qDebug() << "WSARecv() failed with error" << WSAGetLastError();
         }
-        qDebug() << "wsarecvfrom called";
+        else
+        {
+            qDebug() << "wsarecvfrom called";
+        }
+
+    }
+
+
+    if ((EventArray[0] = WSACreateEvent()) == WSA_INVALID_EVENT)
+    {
+        qDebug() << "failed to create event";
     }
     else
-
-    EventArray[0] = WSACreateEvent();
+    {
+        qDebug() << "event created ok";
+    }
 
     while (TRUE)
     {
+        qDebug() << "wait for multiple event";
         Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, WSA_INFINITE, TRUE);
         if (Index == WAIT_IO_COMPLETION)
         {
             // An overlapped request completion routine
             // just completed. Continue servicing more completion routines.
+            qDebug() << "index = wait io completion";
             continue;
         }
         else
@@ -209,6 +254,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             // A bad error occurred: stop processing!
             // If we were also processing an event
             // object, this could be an index to the event array.
+            qDebug() << "error socket closed";
             closesocket(ClientMulticastSocket);
             ExitThread(3);
         }
