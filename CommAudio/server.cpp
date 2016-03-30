@@ -8,6 +8,7 @@ struct ip_mreq ServerMreq;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 char mcast_ip[512] = MCAST_IP;
+u_short mcast_port = MCAST_PORT;
 
 void startServer()
 {
@@ -42,10 +43,10 @@ void startServerMulticastSession()
     }
 
     // Fill in the sockaddr for the multicast group
-    hostent* hp;
+    //hostent* hp;
     memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
     mcastAddr.sin_family = AF_INET;
-    mcastAddr.sin_port = htons(MCAST_PORT);
+    mcastAddr.sin_port = htons(mcast_port);
     mcastAddr.sin_addr.s_addr = inet_addr(mcast_ip);
 
     /*if ((hp = gethostbyname(MCAST_IP)) == NULL)
@@ -130,6 +131,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 {
     DWORD nBytesRead;
     HANDLE hFile;
+    int nRet;
     hFile = CreateFile
             (L"\D:Dict.txt",               // file to open
             GENERIC_READ,
@@ -158,7 +160,11 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
         {
             qDebug() << sendBuff;
             mw->printToListView(sendBuff);
-            sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
+            nRet = sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
+            if (nRet < 0)
+            {
+                qDebug() << "sendto failed" << WSAGetLastError();
+            }
         }
         else
         {
@@ -191,7 +197,6 @@ SOCKET createAcceptSocket()
  */
 bool setupServerMulticastSocket()
 {
-
     bool flag;
     if ((ServerMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
@@ -203,7 +208,7 @@ bool setupServerMulticastSocket()
     int enable=1;
     setsockopt(ServerMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
     // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = htons(0);
+    myAddr.sin_port = 0;
 
     if (bind(ServerMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
@@ -223,7 +228,7 @@ bool setupServerMulticastSocket()
         closesocket(ServerMulticastSocket);
         return false;
     }
-    int ttl = 5;
+    u_long ttl = 5;
     //Setting TTL (hops)
     if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) == SOCKET_ERROR)
     {
@@ -232,12 +237,13 @@ bool setupServerMulticastSocket()
         return false;
     }
 
-    // For testing allows the sender to receive as well
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&flag, sizeof(flag)) == SOCKET_ERROR)
-        {
-            qDebug() << "setsockopt(IP_MULTICAST_LOOP) failed: " << WSAGetLastError();
-            return false;
-        }
+    // Disable loopback
+    BOOL fFlag = FALSE;
+    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&fFlag, sizeof(fFlag)) == SOCKET_ERROR)
+    {
+        qDebug() << "setsockopt(IP_MULTICAST_LOOP) failed: " << WSAGetLastError();
+        return false;
+    }
 
     return true;
 }

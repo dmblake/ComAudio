@@ -161,8 +161,9 @@ bool setupClientMulticastSocket()
     qDebug() << "MCAST addr: " << hp->h_name;
 
     // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = htons(PORT);
-    if (bind(ClientMulticastSocket, (struct sockaddr*)&mcastAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    myAddr.sin_port = htons(MCAST_PORT);
+
+    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
         return false;

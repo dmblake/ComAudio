@@ -9,9 +9,9 @@
 #define PORT            9999
 #define MCAST_PORT      9001
 #define MIC_PORT        9002
-#define SERVER_IP       "127.0.0.1"
+#define SERVER_IP       "192.168.1.76"
 #define PEER_IP         "0.0.0.0"
-#define MCAST_IP        "234.5.6.8"
+#define MCAST_IP        "234.5.6.7"
 #define BUF_LEN         1024
 
 typedef struct _SOCKET_INFORMATION {
