@@ -156,7 +156,7 @@ bool setupClientMulticastSocket()
     }
 
     // join the mcast group
-    if (setsockopt(ClientMulticastSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&ClientMreq, sizeof(ClientMreq)) == SOCKET_ERROR)
+    if (setsockopt(cMcastStruct.Sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&cMcastStruct.mreq, sizeof(ip_mreq)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_ADD_MEMBERSHIP) failed: " << WSAGetLastError();
         closesocket(cMcastStruct.Sock);
