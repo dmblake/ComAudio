@@ -3,11 +3,14 @@
 #include "server.h"
 #include "client.h"
 
+// hank revision
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    mw = this;
 }
 
 MainWindow::~MainWindow()
@@ -33,4 +36,10 @@ void MainWindow::on_startClientButton_clicked()
 void MainWindow::on_startClientMulticast_clicked()
 {
     startClientMulticastSession();
+}
+
+//hank
+void MainWindow::printToListView(std::string msg)
+{
+    ui->listWidget->addItem(QString::fromStdString(msg));
 }

@@ -2,7 +2,8 @@
 #define SERVER_H
 
 #include "shared.h"
-
+#include "client.h"
+#include "mainwindow.h"
 void startServer();
 SOCKET createAcceptSocket();
 bool setupListenSocket();

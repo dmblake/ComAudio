@@ -7,6 +7,7 @@ struct ip_mreq ServerMreq;
 
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
+char mcast_ip[512] = MCAST_IP;
 
 void startServer()
 {
@@ -45,12 +46,14 @@ void startServerMulticastSession()
     memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
     mcastAddr.sin_family = AF_INET;
     mcastAddr.sin_port = htons(MCAST_PORT);
-    if ((hp = gethostbyname(MCAST_IP)) == NULL)
+    mcastAddr.sin_addr.s_addr = inet_addr(mcast_ip);
+
+    /*if ((hp = gethostbyname(MCAST_IP)) == NULL)
     {
         qDebug() << "Unknown mcast address";
     }
     memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
-
+    */
     if (CreateThread(NULL, 0, ServerMcastThread, NULL, 0, NULL) == NULL)
     {
         qDebug() << "ServerMcastThread could not be created";
@@ -154,6 +157,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
         if (nBytesRead > 0)
         {
             qDebug() << sendBuff;
+            mw->printToListView(sendBuff);
             sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
         }
         else
@@ -187,7 +191,7 @@ SOCKET createAcceptSocket()
  */
 bool setupServerMulticastSocket()
 {
-    char mcast_ip[512] = MCAST_IP;
+
     bool flag;
     if ((ServerMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
@@ -199,7 +203,7 @@ bool setupServerMulticastSocket()
     int enable=1;
     setsockopt(ServerMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
     // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = htons(PORT);
+    myAddr.sin_port = htons(0);
 
     if (bind(ServerMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {

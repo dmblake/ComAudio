@@ -1,15 +1,20 @@
-#include "client.h"
+//hank revision
 
+#include "client.h"
+#include "mainwindow.h"
 SOCKET TcpSocket;
 SOCKET UdpSocket;
 SOCKET ClientMulticastSocket;
 struct ip_mreq ClientMreq;
 struct sockaddr_in serverAddr;
 struct sockaddr_in peerAddr;
+struct sockaddr_in clientMcastAddr;
 HANDLE hMulticastThread;
 
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
+
+MainWindow* mw;
 
 void startFileTransfer()
 {
@@ -157,7 +162,15 @@ bool setupClientMulticastSocket()
 
     // Change the port in the myAddr struct to the multicast port
     myAddr.sin_port = htons(PORT);
-
+    if (bind(ClientMulticastSocket, (struct sockaddr*)&mcastAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    {
+        qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
+        return false;
+    }
+    else
+    {
+        qDebug() << "client mcast socket bind() ok";
+    }
 
 
     // Setting the local IP address of interface and the multicast address group
@@ -181,15 +194,7 @@ bool setupClientMulticastSocket()
         return false;
     }
 
-    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
-    {
-        qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
-        return false;
-    }
-    else
-    {
-        qDebug() << "client mcast socket bind() ok";
-    }
+
     return true;
 }
 
@@ -214,6 +219,30 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     SocketInfo->DataBuf.len = BUF_LEN;
     SocketInfo->DataBuf.buf = SocketInfo->Buffer;
 
+    sockaddr_in test;
+    /*hostent* hp;
+    memset((char *)&test, 0, sizeof(struct sockaddr_in));
+    mcastAddr.sin_family = AF_INET;
+    mcastAddr.sin_port = htons(9001);
+    if ((hp = gethostbyname("234.5.6.8")) == NULL)
+    {
+        qDebug() << "Unknown mcast address";
+    }
+    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
+    */
+
+    mw->printToListView("TEstiNG");
+
+    while(true)
+    {
+        qDebug() << "before recvfrom call";
+        recvfrom(ClientMulticastSocket, SocketInfo->Buffer, BUF_LEN, 0, (SOCKADDR *)&test, &addrSize);
+        qDebug() << strlen(SocketInfo->Buffer);
+        qDebug() << SocketInfo->Buffer;
+        qDebug() << "after recvfrom call";
+
+    }
+/*
     if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
             &addrSize, &(SocketInfo->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
     {
@@ -258,7 +287,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             closesocket(ClientMulticastSocket);
             ExitThread(3);
         }
-    }
+    }*/
 }
 
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
