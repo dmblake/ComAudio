@@ -3,6 +3,7 @@
 
 #include "shared.h"
 #include "mainwindow.h"
+#include "network.h"
 void startFileTransfer();
 bool setupTcpSocket();
 bool setUdpSocket();

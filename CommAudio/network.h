@@ -2,7 +2,7 @@
 #define NETWORK_H
 #include "shared.h"
 
-typedef struct McastStruct
+struct McastStruct
 {
   SOCKET Sock;
   SOCKADDR_IN bindAddr;
@@ -10,6 +10,8 @@ typedef struct McastStruct
   ip_mreq mreq;
 };
 
+extern BOOL tFlag;
+extern BOOL fFlag;
 
 void startWinsock();
 void fillMyAddrStruct();

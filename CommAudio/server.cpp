@@ -4,8 +4,7 @@ SOCKET ListenSocket;
 SOCKET ServerMulticastSocket;
 HANDLE hFileTransferThread;
 struct ip_mreq ServerMreq;
-BOOL tFlag = TRUE;
-BOOL fFlag = FALSE;
+
 u_long ttl = MCAST_TTL;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
@@ -164,13 +163,18 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
  */
 bool setupServerMulticastSocket()
 {
-    fillMcastStruct(&sMcastStruct);
+    fillServerMcastStruct(&sMcastStruct);
 
     // Enable reuseaddr
-    setsockopt(sMcastStruct.Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
+    if (setsockopt(sMcastStruct.Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL)) == SOCKET_ERROR)
+    {
+        qDebug() << "setsockopt(SO_REUSEADDR) failed: " << WSAGetLastError();
+        closesocket(sMcastStruct.Sock);
+        return false;
+    }
 
     // bind server mcast socket
-    if (bind(sMcastStruct.Sock, (struct sockaddr*)&sMcastStruct.bindAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    if (bind(sMcastStruct.Sock, (struct sockaddr*)&(sMcastStruct.bindAddr), sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind Multicast Socket: " << WSAGetLastError();
         closesocket(sMcastStruct.Sock);
@@ -208,6 +212,6 @@ void serverCleanup()
 {
     qDebug() << "server cleanup called";
     closesocket(ListenSocket);
-    closesocket(ServerMulticastSocket);
+    closesocket(sMcastStruct.Sock);
     WSACleanup();
 }

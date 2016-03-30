@@ -137,56 +137,34 @@ bool setUdpSocket()
  */
 bool setupClientMulticastSocket()
 {
-    char mcast_ip[512] = MCAST_IP;
-    if ((ClientMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
+    fillClientMcastStruct(&cMcastStruct);
+
+    // Enable resuseaddr
+    if (setsockopt(cMcastStruct.Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL)) == SOCKET_ERROR)
     {
-        qDebug() << "Failed to create Client Multicast Socket: " << WSAGetLastError();
-        closesocket((ClientMulticastSocket));
+        qDebug() << "setsockopt(SO_REUSEADDR) failed: " << WSAGetLastError();
+        closesocket(cMcastStruct.Sock);
         return false;
     }
-
-    int enable = 1;
-    setsockopt(ClientMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
-
-    //
-    hostent* hp;
-    memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
-    mcastAddr.sin_family = AF_INET;
-    mcastAddr.sin_port = htons(MCAST_PORT);
-    if ((hp = gethostbyname("192.168.1.80")) == NULL)
-    {
-        qDebug() << "Unknown mcast address";
-    }
-    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
-    qDebug() << "MCAST addr: " << hp->h_name;
-
-    // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = htons(MCAST_PORT);
-
-    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    
+    // bind the mcast socket
+    if (bind(cMcastStruct.Sock, (struct sockaddr*)&(cMcastStruct.bindAddr), sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
+        closesocket(cMcastStruct.Sock);
         return false;
     }
-    else
-    {
-        qDebug() << "client mcast socket bind() ok";
-    }
 
-
-    // Setting the local IP address of interface and the multicast address group
-    ClientMreq.imr_interface.s_addr = INADDR_ANY;
-    ClientMreq.imr_multiaddr.s_addr = inet_addr(mcast_ip);
-
-    // Joining the Multicast group
+    // join the mcast group
     if (setsockopt(ClientMulticastSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&ClientMreq, sizeof(ClientMreq)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_ADD_MEMBERSHIP) failed: " << WSAGetLastError();
-        closesocket(ClientMulticastSocket);
+        closesocket(cMcastStruct.Sock);
         return false;
     }
 
     return true;
+    
 }
 
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
@@ -205,27 +183,15 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         ExitThread(3);
     }
 
-    SocketInfo->Socket = ClientMulticastSocket;
+    SocketInfo->Socket = cMcastStruct.Sock;
     ZeroMemory(&(SocketInfo->Overlapped), sizeof(WSAOVERLAPPED));
     SocketInfo->DataBuf.len = BUF_LEN;
     SocketInfo->DataBuf.buf = SocketInfo->Buffer;
 
-    sockaddr_in test;
-    /*hostent* hp;
-    memset((char *)&test, 0, sizeof(struct sockaddr_in));
-    mcastAddr.sin_family = AF_INET;
-    mcastAddr.sin_port = htons(9001);
-    if ((hp = gethostbyname("234.5.6.7")) == NULL)
-    {
-        qDebug() << "Unknown mcast address";
-    }
-    memcpy((char *)&test.sin_addr, hp->h_addr, hp->h_length);
-    */
-
     mw->printToListView("TEstiNG");
 
 
-    if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
+    if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&(cMcastStruct.mcastAddr),
             &addrSize, &(SocketInfo->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
     {
         if (WSAGetLastError() != WSA_IO_PENDING)
@@ -285,7 +251,7 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
     if (Error != 0 || BytesTransferred == 0)
     {
         qDebug() << "error !=0 and bytes transferred == 0, closing socket";
-        closesocket(ClientMulticastSocket);
+        closesocket(cMcastStruct.Sock);
         GlobalFree(SI);
         return;
     }
@@ -298,7 +264,7 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 
-    if (WSARecvFrom(SI->Socket, &(SI->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
+    if (WSARecvFrom(SI->Socket, &(SI->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&(cMcastStruct.mcastAddr),
             &addrSize, &(SI->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
     {
         if (WSAGetLastError() != WSA_IO_PENDING)
@@ -318,6 +284,6 @@ void clientCleanup()
     qDebug() << "client cleanup called";
     closesocket(TcpSocket);
     closesocket(UdpSocket);
-    closesocket(ClientMulticastSocket);
+    closesocket(cMcastStruct.Sock);
     WSACleanup();
 }

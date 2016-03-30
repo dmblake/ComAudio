@@ -3,6 +3,9 @@
 struct sockaddr_in myAddr;
 struct sockaddr_in mcastAddr;
 
+BOOL tFlag = TRUE;
+BOOL fFlag = FALSE;
+
 void startWinsock()
 {
     WORD wVersionRequested = MAKEWORD(2, 2);
@@ -42,6 +45,7 @@ bool createUdpSocket(SOCKET* sock)
     if ((*sock = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
         qDebug() << "Failed to create UDP Socket" << WSAGetLastError();
+        closesocket(*sock);
         return false;
     }
     return true;
@@ -52,6 +56,7 @@ bool createTcpSocket(SOCKET* sock)
     if ((*sock = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
         qDebug() << "Failed to create TCP Socket" << WSAGetLastError();
+        closesocket(*sock);
         return false;
     }
     return true;
@@ -62,6 +67,7 @@ bool createAcceptSocket(SOCKET* listenSocket, SOCKET* acceptSocket)
     if((*acceptSocket = accept(*listenSocket, NULL, NULL)) == INVALID_SOCKET)
     {
         qDebug() << "Failed to create Accept Socket" << WSAGetLastError();
+        closesocket(*acceptSocket);
     }
     return true;
 }
