@@ -11,6 +11,7 @@ void clientCleanup();
 void startClientMulticastSession();
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags);
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter);
+void processIO(char* data);
 
 extern MainWindow *mw;
 #endif // CLIENT_H
