@@ -153,7 +153,7 @@ bool setupClientMulticastSocket()
     memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
     mcastAddr.sin_family = AF_INET;
     mcastAddr.sin_port = htons(MCAST_PORT);
-    if ((hp = gethostbyname(MCAST_IP)) == NULL)
+    if ((hp = gethostbyname("192.168.1.80")) == NULL)
     {
         qDebug() << "Unknown mcast address";
     }
@@ -161,8 +161,8 @@ bool setupClientMulticastSocket()
     qDebug() << "MCAST addr: " << hp->h_name;
 
     // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = htons(PORT);
-    if (bind(ClientMulticastSocket, (struct sockaddr*)&mcastAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    myAddr.sin_port = htons(MCAST_PORT);
+    if (bind(ClientMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind Client Multicast Socket: " << WSAGetLastError();
         return false;
@@ -224,25 +224,16 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     memset((char *)&test, 0, sizeof(struct sockaddr_in));
     mcastAddr.sin_family = AF_INET;
     mcastAddr.sin_port = htons(9001);
-    if ((hp = gethostbyname("234.5.6.8")) == NULL)
+    if ((hp = gethostbyname("234.5.6.7")) == NULL)
     {
         qDebug() << "Unknown mcast address";
     }
-    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
+    memcpy((char *)&test.sin_addr, hp->h_addr, hp->h_length);
     */
 
     mw->printToListView("TEstiNG");
 
-    while(true)
-    {
-        qDebug() << "before recvfrom call";
-        recvfrom(ClientMulticastSocket, SocketInfo->Buffer, BUF_LEN, 0, (SOCKADDR *)&test, &addrSize);
-        qDebug() << strlen(SocketInfo->Buffer);
-        qDebug() << SocketInfo->Buffer;
-        qDebug() << "after recvfrom call";
 
-    }
-/*
     if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&mcastAddr,
             &addrSize, &(SocketInfo->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
     {
@@ -287,7 +278,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             closesocket(ClientMulticastSocket);
             ExitThread(3);
         }
-    }*/
+    }
 }
 
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
@@ -311,7 +302,8 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
     //process io here
     //SI->Buffer
     //BytesTransferred
-    qDebug() << "Received data" << SI->Buffer;
+    //qDebug() << "Received data" << SI->Buffer;
+    processIO(SI->Buffer);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 
@@ -323,6 +315,11 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
             qDebug() << "WSARecv()1 failed with error " << WSAGetLastError();
         }
     }
+}
+
+void processIO(char* data)
+{
+    qDebug() << data;
 }
 
 void clientCleanup()
