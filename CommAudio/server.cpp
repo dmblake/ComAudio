@@ -4,11 +4,12 @@ SOCKET ListenSocket;
 SOCKET ServerMulticastSocket;
 HANDLE hFileTransferThread;
 struct ip_mreq ServerMreq;
-
+BOOL tFlag = TRUE;
+BOOL fFlag = FALSE;
+u_long ttl = MCAST_TTL;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
-char mcast_ip[512] = MCAST_IP;
-u_short mcast_port = MCAST_PORT;
+McastStruct sMcastStruct;
 
 void startServer()
 {
@@ -31,50 +32,27 @@ void startServer()
     startServerMulticastSession();
 }
 
+
 void startServerMulticastSession()
 {
     if (!setupServerMulticastSocket())
     {
         qDebug() << "failed to setup multicast socket" << WSAGetLastError();
     }
-    else
-    {
-        qDebug() << "serverMcastSocket OK";
-    }
 
-    // Fill in the sockaddr for the multicast group
-    //hostent* hp;
-    memset((char *)&mcastAddr, 0, sizeof(struct sockaddr_in));
-    mcastAddr.sin_family = AF_INET;
-    mcastAddr.sin_port = htons(mcast_port);
-    mcastAddr.sin_addr.s_addr = inet_addr(mcast_ip);
-
-    /*if ((hp = gethostbyname(MCAST_IP)) == NULL)
-    {
-        qDebug() << "Unknown mcast address";
-    }
-    memcpy((char *)&mcastAddr.sin_addr, hp->h_addr, hp->h_length);
-    */
     if (CreateThread(NULL, 0, ServerMcastThread, NULL, 0, NULL) == NULL)
     {
         qDebug() << "ServerMcastThread could not be created";
-    }
-    else
-    {
-        qDebug() << "ServerMcastThread started";
     }
 }
 
 bool setupListenSocket()
 {
     qDebug()<< "setupListenSocket called";
-    if ((ListenSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
-    {
-        qDebug() << "Failed to get a socket";
-        return false;
-    }
-    int enable = 1;
-    setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
+    createTcpSocket(&ListenSocket);
+
+    // set reuseaddr
+    setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
 
     // Change the port in the myAddr struct to the default port
     myAddr.sin_port = htons(PORT);
@@ -108,11 +86,12 @@ DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
     SOCKET AcceptSocket;
     while(TRUE)
     {
-        AcceptSocket = createAcceptSocket();
+        createAcceptSocket(&ListenSocket, &AcceptSocket);
         if (CreateThread(NULL, 0, FileTransferThread, (void*)AcceptSocket, 0, NULL) == NULL)
         {
             qDebug() << "File transfer (Accept) Socket could not be created";
         }
+
         //close accept socket after passing a copy to the thread
         closesocket(AcceptSocket);
     }
@@ -160,7 +139,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
         {
             qDebug() << sendBuff;
             mw->printToListView(sendBuff);
-            nRet = sendto(ServerMulticastSocket, sendBuff, nBytesRead, 0, (SOCKADDR *)&mcastAddr, sizeof(sockaddr_in));
+            nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
             if (nRet < 0)
             {
                 qDebug() << "sendto failed" << WSAGetLastError();
@@ -176,18 +155,6 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     qDebug() << "finished sending";
 }
 
-
-SOCKET createAcceptSocket()
-{
-    qDebug() << "in createAcceptSocket()";
-    SOCKET TempSocket;
-    if((TempSocket = accept(ListenSocket, NULL, NULL)) == -1)
-    {
-        qDebug("Cant accept client");
-    }
-    return TempSocket;
-}
-
 /*
  * Creates and bind a UDP socket.
  * Fills in the information for the ip_mreq structure which contains the
@@ -197,51 +164,40 @@ SOCKET createAcceptSocket()
  */
 bool setupServerMulticastSocket()
 {
-    bool flag;
-    if ((ServerMulticastSocket = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
-    {
-        qDebug() << "Failed to create Multicast Socket: " << WSAGetLastError();
-        closesocket((ServerMulticastSocket));
-        return false;
-    }
+    fillMcastStruct(&sMcastStruct);
 
-    int enable=1;
-    setsockopt(ServerMulticastSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(int));
-    // Change the port in the myAddr struct to the multicast port
-    myAddr.sin_port = 0;
+    // Enable reuseaddr
+    setsockopt(sMcastStruct.Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
 
-    if (bind(ServerMulticastSocket, (struct sockaddr*)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    // bind server mcast socket
+    if (bind(sMcastStruct.Sock, (struct sockaddr*)&sMcastStruct.bindAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind Multicast Socket: " << WSAGetLastError();
+        closesocket(sMcastStruct.Sock);
         return false;
     }
 
-    // Setting the local IP address of interface and the multicast address group
-    ServerMreq.imr_interface.s_addr = INADDR_ANY;
-    ServerMreq.imr_multiaddr.s_addr = inet_addr(mcast_ip);
-
-
-    // Joining the Multicast group
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&ServerMreq, sizeof(ServerMreq)) == SOCKET_ERROR)
+    // join mcast group
+    if (setsockopt(sMcastStruct.Sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&(sMcastStruct.mreq), sizeof(ip_mreq)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_ADD_MEMBERSHIP) failed: " << WSAGetLastError();
-        closesocket(ServerMulticastSocket);
-        return false;
-    }
-    u_long ttl = 5;
-    //Setting TTL (hops)
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) == SOCKET_ERROR)
-    {
-        qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
-        closesocket(ServerMulticastSocket);
+        closesocket(sMcastStruct.Sock);
         return false;
     }
 
-    // Disable loopback
-    BOOL fFlag = FALSE;
-    if (setsockopt(ServerMulticastSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&fFlag, sizeof(fFlag)) == SOCKET_ERROR)
+    // set ttl
+    if (setsockopt(sMcastStruct.Sock, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(u_long)) == SOCKET_ERROR)
+    {
+        qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
+        closesocket(sMcastStruct.Sock);
+        return false;
+    }
+
+    // disable loop back
+    if (setsockopt(sMcastStruct.Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&fFlag, sizeof(BOOL)) == SOCKET_ERROR)
     {
         qDebug() << "setsockopt(IP_MULTICAST_LOOP) failed: " << WSAGetLastError();
+        closesocket(sMcastStruct.Sock);
         return false;
     }
 

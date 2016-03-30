@@ -10,7 +10,7 @@ struct sockaddr_in serverAddr;
 struct sockaddr_in peerAddr;
 struct sockaddr_in clientMcastAddr;
 HANDLE hMulticastThread;
-
+McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
@@ -185,16 +185,6 @@ bool setupClientMulticastSocket()
         closesocket(ClientMulticastSocket);
         return false;
     }
-
-    // Setting TTL (hops)
-    int ttl = 5;
-    if (setsockopt(ClientMulticastSocket, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) == SOCKET_ERROR)
-    {
-        qDebug() << "setsockopt(IP_MULTICAST_TTL) failed: " << WSAGetLastError();
-        closesocket(ClientMulticastSocket);
-        return false;
-    }
-
 
     return true;
 }
