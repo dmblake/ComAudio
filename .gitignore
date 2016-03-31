@@ -11,7 +11,6 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -20,13 +19,27 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
 
+# Audio files
+*.mp3
+*.wav
+
+# Visual Studio Garbage
+*.opensdf
+*.sdf
+*.sln
+*.vcproj
+*.dsp
+*.vcxproj*
+
+# Visual Studio Subfolders and executables
+Debug/
+.vs/
 # .gitignore for qt projects (some files are duplicated)
 # C++ objects and libs
 

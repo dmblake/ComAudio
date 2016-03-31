@@ -8,7 +8,6 @@
 #include "client.h"
 #include <iostream>
 
-bool server = true;
 
 int main(int argc, char *argv[])
 {
@@ -20,14 +19,6 @@ int main(int argc, char *argv[])
     fillMyAddrStruct();
     fillMcastAddrStruct();
 
-    if (server)
-    {
-        startServer();
-    }
-    else
-    {
-        startFileTransfer();
-    }
 
     //setUdpSocket();
 
