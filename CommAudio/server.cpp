@@ -103,6 +103,7 @@ DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 
     //close socket right away for testing
     closesocket(fileTransferSocket);
+    return 0;
 }
 
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
