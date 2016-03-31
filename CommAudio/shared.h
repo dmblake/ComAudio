@@ -13,6 +13,7 @@
 #define PEER_IP         "0.0.0.0"
 #define MCAST_IP        "234.5.6.7"
 #define BUF_LEN         1024
+#define MAX_BUF         500000
 
 typedef struct _SOCKET_INFORMATION {
     OVERLAPPED Overlapped;

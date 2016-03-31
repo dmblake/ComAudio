@@ -25,6 +25,8 @@ private slots:
 
     void on_startClientMulticast_clicked();
 
+    void on_playbackButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

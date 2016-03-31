@@ -28,8 +28,11 @@ HEADERS  += mainwindow.h \
     client.h \
     network.h \
     playback.h \
-    circularbuffer.h
+    circularbuffer.h \
+    bass.h
 
-LIBS += -LC:\dicom\lib -lws2_32 -lwsock32
+LIBS += -LC:\dicom\lib -lws2_32 -lwsock32 -L"D:\QtProjects\ComAudio\CommAudio\lib\bass.lib"
+
+INCLUDEPATH += D:\QtProjects\ComAudio\CommAudio\lib
 
 FORMS    += mainwindow.ui

@@ -30,7 +30,7 @@ void MainWindow::on_startMulticastServer_clicked()
 
 void MainWindow::on_startClientButton_clicked()
 {
-    startFileTransfer();
+    startClient();
 }
 
 void MainWindow::on_startClientMulticast_clicked()
@@ -42,4 +42,9 @@ void MainWindow::on_startClientMulticast_clicked()
 void MainWindow::printToListView(std::string msg)
 {
     ui->listWidget->addItem(QString::fromStdString(msg));
+}
+
+void MainWindow::on_playbackButton_clicked()
+{
+    playback();
 }

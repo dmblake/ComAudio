@@ -15,6 +15,30 @@ extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
 MainWindow* mw;
+Playback* playbackBuffer;
+CircularBuffer* networkBuffer;
+
+void startClient()
+{
+    playbackBuffer = new Playback(MAX_BUF);
+    networkBuffer = new CircularBuffer(MAX_BUF);
+}
+
+void playback()
+{
+    HSTREAM str;
+    int err;
+    if (!BASS_Init(-1, 44100, 0, 0, 0)) {
+        qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
+    }
+    if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
+        qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+    }
+    if (!BASS_ChannelPlay(str, TRUE)) {
+        qDebug() << "Failed to play" << BASS_ErrorGetCode();
+    }
+    Sleep(5000);
+}
 
 void startFileTransfer()
 {
@@ -202,7 +226,6 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         {
             qDebug() << "wsarecvfrom called";
         }
-
     }
 
 
@@ -238,6 +261,8 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     }
 }
 
+
+
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
 {
     qDebug() << "inside completion routine";
@@ -260,7 +285,7 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
     //SI->Buffer
     //BytesTransferred
     //qDebug() << "Received data" << SI->Buffer;
-    processIO(SI->Buffer);
+    processIO(SI->Buffer, BytesTransferred);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 
@@ -274,9 +299,10 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
     }
 }
 
-void processIO(char* data)
+void processIO(char* data, DWORD len)
 {
     qDebug() << data;
+    playbackBuffer->write(data, len);
 }
 
 void clientCleanup()

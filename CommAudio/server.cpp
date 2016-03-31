@@ -130,15 +130,20 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     }
     char sendBuff[BUF_LEN];
     int ret;
+
+    
+
     while (ReadFile(hFile, sendBuff, BUF_LEN, &nBytesRead, NULL))
     {
-
         // Sending Datagrams
 
         if (nBytesRead > 0)
         {
+            //cb.write(sendBuff, BUF_LEN);
+
             qDebug() << sendBuff;
             mw->printToListView(sendBuff);
+            
             nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
             if (nRet < 0)
             {

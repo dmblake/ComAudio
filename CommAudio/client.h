@@ -4,6 +4,8 @@
 #include "shared.h"
 #include "mainwindow.h"
 #include "network.h"
+#include "playback.h"
+#include "bass.h"
 void startFileTransfer();
 bool setupTcpSocket();
 bool setUdpSocket();
@@ -12,7 +14,10 @@ void clientCleanup();
 void startClientMulticastSession();
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags);
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter);
-void processIO(char* data);
-
+void processIO(char* data, DWORD len);
+void startClient();
+void playback();
+extern CircularBuffer* networkBuffer;
+extern Playback* playbackBuffer;
 extern MainWindow *mw;
 #endif // CLIENT_H
