@@ -16,6 +16,8 @@ public:
     Playback(int size);
     ~Playback();
     BASS_FILEPROCS* getFP();
+    int write(const char * buf, int len);
+    int read(char * buf, int len);
 private:
     CircularBuffer* _cb;
     BASS_FILEPROCS fp;   

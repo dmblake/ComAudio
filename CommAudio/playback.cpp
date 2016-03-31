@@ -34,3 +34,11 @@ Playback::~Playback() {
 BASS_FILEPROCS* Playback::getFP() {
     return &fp;
 }
+
+int Playback::write(const char * buf, int len) {
+    return _cb->write(buf, len);
+}
+
+int Playback::read(char * buf, int len) {
+    return _cb->read(buf, len);
+}
