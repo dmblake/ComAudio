@@ -52,6 +52,7 @@ void startClientMulticastSession()
 {
     qDebug() << "startClientMulticastSession called";
     WSAEVENT ThreadEvent;
+    startClient();
 
     if (!setupClientMulticastSocket())
     {

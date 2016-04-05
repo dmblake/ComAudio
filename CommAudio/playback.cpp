@@ -12,7 +12,7 @@ QWORD CALLBACK fileOpenProc(void *user)
 
 DWORD CALLBACK fileReadProc(void *buffer, DWORD length, void *user)
 {
-    return ((CircularBuffer*)user)->read((char*)buffer, length);
+    return ((Playback*)user)->read((char*)buffer, length);
 }
 
 BOOL CALLBACK fileSeekProc(QWORD offset, void* user)
