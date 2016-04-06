@@ -14,7 +14,8 @@ public:
     int read(char * buf, int len);
     int write(const char * buf, int len);
     DWORD getSize();
-    int getAvailable();
+    int getSpaceAvailable();
+    int getDataAvailable();
 private:
     char * _data;
     int _writeBytesAvailable;

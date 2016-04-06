@@ -21,20 +21,25 @@ BOOL CALLBACK fileSeekProc(QWORD offset, void* user)
 }
 
 
-Playback::Playback(int size) {
-    _cb = new CircularBuffer(size);
-    fp = { fileCloseProc, fileOpenProc, fileReadProc, fileSeekProc };
+Playback::Playback(int size) : CircularBuffer(size){
+    //_cb = new CircularBuffer(size);
+    fp.close = fileCloseProc;
+    fp.length = fileOpenProc;
+    fp.read = fileReadProc;
+    fp.seek = fileSeekProc;
 }
 
 Playback::~Playback() {
+ /*
     if (_cb != 0)
         delete [] _cb;
+        */
 }
 
 BASS_FILEPROCS* Playback::getFP() {
     return &fp;
 }
-
+/*
 int Playback::write(const char * buf, int len) {
     return _cb->write(buf, len);
 }
@@ -42,3 +47,8 @@ int Playback::write(const char * buf, int len) {
 int Playback::read(char * buf, int len) {
     return _cb->read(buf, len);
 }
+
+int Playback::getAvailable() {
+    return _cb->getAvailable();
+}
+*/

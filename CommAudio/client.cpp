@@ -10,6 +10,7 @@ struct sockaddr_in serverAddr;
 struct sockaddr_in peerAddr;
 struct sockaddr_in clientMcastAddr;
 HANDLE hMulticastThread;
+HANDLE hPlaybackThread;
 McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
@@ -17,28 +18,102 @@ extern struct sockaddr_in myAddr;
 MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
+bool playing = false;
 
 void startClient()
 {
     playbackBuffer = new Playback(MAX_BUF);
     networkBuffer = new CircularBuffer(MAX_BUF);
-}
 
-void playback()
-{
-    HSTREAM str;
-    int err;
+
     if (!BASS_Init(-1, 44100, 0, 0, 0)) {
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
+        mw->printToListView("Failed to init BASS");
     }
-    if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
-        qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-    }
-    if (!BASS_ChannelPlay(str, TRUE)) {
-        qDebug() << "Failed to play" << BASS_ErrorGetCode();
-    }
-    Sleep(5000);
+
 }
+
+// handles when you press the play button
+// temp function
+void playback()
+{
+    playing = true;
+    hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, NULL, 0, NULL);
+
+}
+
+DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
+    HSTREAM str = 0;
+    char tmp[BUF_LEN];
+    int datalen= 0;
+    int netdata = 0;
+    int playspace = 0;
+    Playback *pb = playbackBuffer;
+    memset(tmp, 0, BUF_LEN);
+
+
+    // main playback loop
+    while (playing) {
+        // if there is space in the playback buffer and data in the network buffer
+        netdata = networkBuffer->getDataAvailable();
+        playspace = playbackBuffer->getSpaceAvailable();
+        if (playspace > 0 && netdata > 0) {
+            // set amount of data to copy
+            datalen = (netdata > BUF_LEN) ? BUF_LEN : netdata;
+            networkBuffer->read(tmp, datalen);
+            playbackBuffer->write(tmp, datalen);
+            // if stream is not created, do so now
+            // the check on data available is to ensure the entire header has been read in
+            if (str == 0 && playbackBuffer->getDataAvailable() > 20000) {
+                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
+                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+                    mw->printToListView("Failed to create stream");
+                }
+
+                // auto start, move this away!
+                if (!BASS_ChannelPlay(str, FALSE)) {
+                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                    mw->printToListView(("Failed to play stream"));
+                }
+            } // end init stream
+        } // end adding to data
+        if (playbackBuffer->getDataAvailable() > 20000) {
+            int act = BASS_ChannelIsActive(str);
+            switch (BASS_ChannelIsActive(str)) {
+            case BASS_ACTIVE_PAUSED:
+                break;
+            case BASS_ACTIVE_PLAYING:
+                break;
+            case BASS_ACTIVE_STALLED:
+                break;
+            case BASS_ACTIVE_STOPPED:
+                // play
+                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
+                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+                    mw->printToListView("Failed to create stream");
+                }
+                // auto start, move this away!
+                if (!BASS_ChannelPlay(str, FALSE)) {
+                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                    mw->printToListView(("Failed to play stream"));
+                }
+                break;
+            case -1:
+                qDebug() << "Error in BASS status";
+
+            }
+        }
+
+        /*else if (BASS_ChannelIsActive(str) == BASS_ACTIVE_PLAYING && playbackBuffer->getDataAvailable() < 20000){
+            // stop
+            if (!BASS_ChannelPause(str)) {
+                qDebug() << "Failed to stop" << BASS_ErrorGetCode();
+             }
+        }
+        */
+    } // end while loop
+    return 1;
+} // end thread proc
 
 void startFileTransfer()
 {
@@ -69,6 +144,7 @@ void startClientMulticastSession()
         qDebug() << "CreateThread() failed with error " << GetLastError();
         return;
     }
+    playback();
 }
 
 /*
@@ -303,7 +379,9 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 void processIO(char* data, DWORD len)
 {
     qDebug() << data;
-    playbackBuffer->write(data, len);
+    if (networkBuffer->getSpaceAvailable() > len) {
+        networkBuffer->write(data, len);
+    }
 }
 
 void clientCleanup()

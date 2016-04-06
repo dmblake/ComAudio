@@ -76,7 +76,11 @@ DWORD CircularBuffer::getSize() {
     return _size;
 }
 
-int CircularBuffer::getAvailable() {
+int CircularBuffer::getSpaceAvailable() {
     return _writeBytesAvailable;
+}
+
+int CircularBuffer::getDataAvailable() {
+    return (_size - _writeBytesAvailable);
 }
 

@@ -10,16 +10,19 @@
 
 
 
-class Playback
+class Playback : public CircularBuffer
 {
 public:
     Playback(int size);
     ~Playback();
     BASS_FILEPROCS* getFP();
+    /*
     int write(const char * buf, int len);
     int read(char * buf, int len);
+    int getAvailable();
+    */
 private:
-    CircularBuffer* _cb;
+ //   CircularBuffer* _cb;
     BASS_FILEPROCS fp;   
 };
 

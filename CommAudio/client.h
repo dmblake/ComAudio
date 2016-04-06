@@ -17,6 +17,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter);
 void processIO(char* data, DWORD len);
 void startClient();
 void playback();
+DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater);
 extern CircularBuffer* networkBuffer;
 extern Playback* playbackBuffer;
 extern MainWindow *mw;

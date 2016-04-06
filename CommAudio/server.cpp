@@ -112,7 +112,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     HANDLE hFile;
     int nRet;
     hFile = CreateFile
-            (L"\D:Dict.txt",               // file to open
+            (L"C:\\Users\\Think_Admin\\Desktop\\Birdland.mp3",               // file to open
             GENERIC_READ,
             0,
             (LPSECURITY_ATTRIBUTES)NULL,       // share for reading
@@ -139,16 +139,16 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 
         if (nBytesRead > 0)
         {
-            //cb.write(sendBuff, BUF_LEN);
 
             qDebug() << sendBuff;
-            mw->printToListView(sendBuff);
+            //mw->printToListView(sendBuff);
             
             nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
             if (nRet < 0)
             {
                 qDebug() << "sendto failed" << WSAGetLastError();
             }
+            Sleep(10);
         }
         else
         {
