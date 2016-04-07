@@ -22,7 +22,7 @@ std::string listAllFiles(std::string extension) {
 	    			std::filebuf *pbuf;
 					std::ifstream sourcestr;
 
-	    			sourcestr.open(filename, std::ios::in | std::ios::binary);
+	    			sourcestr.open(fname, std::ios::in | std::ios::binary);
 
 					// get pointer to associated buffer object
 					pbuf = sourcestr.rdbuf();

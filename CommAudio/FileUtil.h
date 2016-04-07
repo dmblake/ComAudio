@@ -4,6 +4,7 @@
 #include <fstream>
 #include <winsock2.h>
 #include <errno.h>
+#include <string>
 
 std::string listAllFiles(std::string extension);
 void sendFile(SOCKET sd, char* filename);
