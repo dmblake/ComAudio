@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     network.cpp \
     playback.cpp \
     circularbuffer.cpp \
-    FileUtil.cpp
+    FileUtil.cpp \
+    settingsdialog.cpp
 
 HEADERS  += mainwindow.h \
     server.h \
@@ -32,11 +33,13 @@ HEADERS  += mainwindow.h \
     circularbuffer.h \
     bass.h \
     dirent.h \
-    FileUtil.h
+    FileUtil.h \
+    settingsDialog.h
 
 
 LIBS += -LC:\dicom\lib -lws2_32 -lwsock32 -L"$$PWD\lib" -lbass
 
 INCLUDEPATH += D:\QtProjects\ComAudio\CommAudio\lib
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    settingsdialog.ui

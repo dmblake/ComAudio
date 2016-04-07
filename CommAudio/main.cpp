@@ -6,14 +6,19 @@
 #include "network.h"
 #include "server.h"
 #include "client.h"
+#include "settingsDialog.h"
 #include <iostream>
 
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    //MainWindow w;
+    //w.show();
+
+    settingsDialog s;
+    s.show();
+
 
     startWinsock();
     fillMyAddrStruct();

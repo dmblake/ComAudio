@@ -11,10 +11,10 @@ std::string rcvControlMessage(SOCKET sd) {
 	int n;
 
 	bp = rbuf;
-	bytes_to_read = size;
+    bytes_to_read = BUF_LEN;
 
 	// client makes repeated calls to recv until no more data is expected to arrive.
-	while ((n = recv(sd, bp, bytes_to_read, 0)) < size) {
+    while ((n = recv(sd, bp, bytes_to_read, 0)) < BUF_LEN) {
 		bp += n;
 		bytes_to_read -= n;
 		if (n == 0)
