@@ -21,9 +21,8 @@ std::string rcvControlMessage(SOCKET sd) {
 			break;
 	}
 
-	// fix this
-
-	return "";
+	std::string msg = std::string(rbuf);
+	return msg;
 }
 
 std::string listAllFiles(std::string extension) {
