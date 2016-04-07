@@ -1,5 +1,31 @@
 #include "FileUtil.h"
 
+void sendControlMessage(SOCKET sd, char* msg) {
+	send(sd, msg, BUF_LEN, 0);
+}
+
+std::string rcvControlMessage(SOCKET sd) {
+	char * bp;
+	char * rbuf = (char *) malloc(BUF_LEN);
+	int bytes_to_read;
+	int n;
+
+	bp = rbuf;
+	bytes_to_read = size;
+
+	// client makes repeated calls to recv until no more data is expected to arrive.
+	while ((n = recv(sd, bp, bytes_to_read, 0)) < size) {
+		bp += n;
+		bytes_to_read -= n;
+		if (n == 0)
+			break;
+	}
+
+	// fix this
+
+	return "";
+}
+
 std::string listAllFiles(std::string extension) {
 	DIR           *d;
 	struct dirent *dir;
@@ -73,7 +99,6 @@ void sendFile(SOCKET sd, char* filename) {
 void rcvFile(SOCKET sd, char* fname, int size) {
 	char * bp;
 	char * rbuf = (char *) malloc(size);
-	char * sbuf = (char *)malloc(size);
 	int bytes_to_read;
 	int n;
 
@@ -90,6 +115,7 @@ void rcvFile(SOCKET sd, char* fname, int size) {
 
 	FILE * pFile;
 	pFile = fopen(fname, "wb");
+
 	if (pFile != NULL) {
 		fwrite(rbuf, sizeof(char), size, pFile);
 		fclose(pFile);
