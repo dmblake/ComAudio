@@ -15,6 +15,24 @@ std::string listAllFiles(std::string extension) {
 	    		std::string fname = dir->d_name;
 	    		if (fname.find(extension, (fname.length() - extension.length())) != std::string::npos) {
 	    			finalList += fname;
+	    			finalList += ", ";
+
+	    			// file size
+	    			long size;
+	    			std::filebuf *pbuf;
+					std::ifstream sourcestr;
+
+	    			sourcestr.open(filename, std::ios::in | std::ios::binary);
+
+					// get pointer to associated buffer object
+					pbuf = sourcestr.rdbuf();
+
+					// get file size using buffer's members
+					size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
+					sourcestr.close();
+
+					finalList += std::to_string(size);
+
 	    			finalList += "\n";
 	    		}
 	    	}
@@ -39,7 +57,7 @@ void sendFile(SOCKET sd, char* filename) {
 
 	// get file size using buffer's members
 	size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-	pbuf->pubseekpos(0, std::ios::in)    ;
+	pbuf->pubseekpos(0, std::ios::in);
 
 	// allocate memory to contain file data
 	bbuffer = (char*)malloc(sizeof(char)*size);
