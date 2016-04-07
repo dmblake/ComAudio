@@ -18,25 +18,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_startServerButton_clicked()
-{
-    startServer();
-}
-
-void MainWindow::on_startMulticastServer_clicked()
-{
-
-}
-
-void MainWindow::on_startClientButton_clicked()
-{
-    startClient();
-}
-
-void MainWindow::on_startClientMulticast_clicked()
-{
-    startClientMulticastSession();
-}
 
 //hank
 void MainWindow::printToListView(std::string msg)
@@ -44,7 +25,17 @@ void MainWindow::printToListView(std::string msg)
     ui->listWidget->addItem(QString::fromStdString(msg));
 }
 
-void MainWindow::on_playbackButton_clicked()
+//void MainWindow::on_playbackButton_clicked()
+//{
+//    playback();
+//}
+
+void MainWindow::on_pushButton_3_clicked()
 {
-    playback();
+    startServer();
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    startClientMulticastSession();
 }

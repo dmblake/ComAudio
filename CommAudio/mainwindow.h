@@ -17,15 +17,12 @@ public:
     void printToListView(std::string msg);
 
 private slots:
-    void on_startServerButton_clicked();
 
-    void on_startMulticastServer_clicked();
+    //void on_playbackButton_clicked();
 
-    void on_startClientButton_clicked();
+    void on_pushButton_3_clicked();
 
-    void on_startClientMulticast_clicked();
-
-    void on_playbackButton_clicked();
+    void on_pushButton_4_clicked();
 
 private:
     Ui::MainWindow *ui;
