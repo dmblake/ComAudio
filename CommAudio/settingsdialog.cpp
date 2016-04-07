@@ -19,7 +19,7 @@ settingsDialog::~settingsDialog()
 
 void settingsDialog::on_continueButton_clicked(){
 
-    MainWindow *w = new MainWindow(this);
+    MainWindow* w = new MainWindow(ui->serverCheck->isChecked(), ui->clientCheck->isChecked(), ui->clientText->toPlainText());
     w->show();
 
     close();

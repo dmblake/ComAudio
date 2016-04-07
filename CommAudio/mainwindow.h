@@ -13,6 +13,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(bool server,bool client, QString ipaddr);
     ~MainWindow();
     void printToListView(std::string msg);
 
@@ -26,6 +27,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    bool _server;
+    bool _client;
+    QString _ipaddr;
 };
 
 #endif // MAINWINDOW_H

@@ -13,6 +13,16 @@ MainWindow::MainWindow(QWidget *parent) :
     mw = this;
 }
 
+
+MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),_client(client),_ipaddr(ipaddr),
+    ui(new Ui::MainWindow){
+
+    ui->setupUi(this);
+    qDebug() << server;
+    qDebug() << client;
+    qDebug() << ipaddr;
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
