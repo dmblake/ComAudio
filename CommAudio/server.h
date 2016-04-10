@@ -7,15 +7,13 @@
 #include "network.h"
 #include "circularbuffer.h"
 void startServer();
-bool setupListenSocket();
+bool setupServerListenSocket();
 DWORD WINAPI FileTransferThread(LPVOID lpParameter);
 bool setupServerMulticastSocket();
 void serverCleanup();
 void startServerMulticastSession();
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter);
-DWORD WINAPI AcceptSocketThread(LPVOID lpParameter);
-
-
+DWORD WINAPI ServerAcceptSocketThread(LPVOID lpParameter);
 
 #define MCAST_TTL 2
 

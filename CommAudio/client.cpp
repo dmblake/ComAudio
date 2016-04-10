@@ -15,6 +15,7 @@ McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
+SOCKET ClientListenSocket;
 MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
@@ -338,8 +339,6 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     }
 }
 
-
-
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
 {
     qDebug() << "inside completion routine";
@@ -381,6 +380,57 @@ void processIO(char* data, DWORD len)
     qDebug() << data;
     if (networkBuffer->getSpaceAvailable() > len) {
         networkBuffer->write(data, len);
+    }
+}
+
+bool setupClientListenSocket()
+{
+    qDebug()<< "setupClientListenSocket called";
+    createTcpSocket(&ClientListenSocket);
+
+    // set reuseaddr
+    setsockopt(ClientListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
+
+    // Change the port in the myAddr struct to the default port
+    myAddr.sin_port = htons(MIC_PORT);
+
+    // Bind the listen socket
+    if (bind(ClientListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    {
+        qDebug() << "Failed to bind the listen socket";
+        return false;
+    }
+
+    // Setup the ListenSocket to listen for incoming connections
+    // with a backlog size 5
+    if (listen(ClientListenSocket, 5))
+    {
+        qDebug() << "listen() failed";
+        return false;
+    }
+
+    /*
+    if (CreateThread(NULL, 0, AcceptSocketThread, NULL, 0, NULL) == NULL)
+    {
+        qDebug() << "AcceptSocket Thread could not be created";
+    }*/
+
+    return true;
+}
+
+/* */
+DWORD WINAPI ClientAcceptSocketThread(LPVOID lpParameter)
+{
+    qDebug() << "inside accept socket thread";
+    SOCKET AcceptSocket;
+    while(TRUE)
+    {
+        createAcceptSocket(&ClientListenSocket, &AcceptSocket);
+
+        //handle mic stuff
+
+        //close accept socket after passing a copy to the thread
+        closesocket(AcceptSocket);
     }
 }
 

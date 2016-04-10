@@ -1,6 +1,6 @@
 #include "server.h"
 
-SOCKET ListenSocket;
+SOCKET ServerListenSocket;
 SOCKET ServerMulticastSocket;
 HANDLE hFileTransferThread;
 struct ip_mreq ServerMreq;
@@ -14,7 +14,7 @@ void startServer()
 {
     //Start the file transfer thread
     //Sets up the listen socket and accepts incoming connections
-    if (!setupListenSocket())
+    if (!setupServerListenSocket())
     {
         qDebug() << "failed to setup ListenSocket";
     }
@@ -45,19 +45,19 @@ void startServerMulticastSession()
     }
 }
 
-bool setupListenSocket()
+bool setupServerListenSocket()
 {
-    qDebug()<< "setupListenSocket called";
-    createTcpSocket(&ListenSocket);
+    qDebug()<< "setupServerListenSocket called";
+    createTcpSocket(&ServerListenSocket);
 
     // set reuseaddr
-    setsockopt(ListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
+    setsockopt(ServerListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
 
     // Change the port in the myAddr struct to the default port
     myAddr.sin_port = htons(PORT);
 
     // Bind the listen socket
-    if (bind(ListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    if (bind(ServerListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "Failed to bind the listen socket";
         return false;
@@ -65,13 +65,13 @@ bool setupListenSocket()
 
     // Setup the ListenSocket to listen for incoming connections
     // with a backlog size 5
-    if (listen(ListenSocket, 5))
+    if (listen(ServerListenSocket, 5))
     {
         qDebug() << "listen() failed";
         return false;
     }
 
-    if (CreateThread(NULL, 0, AcceptSocketThread, NULL, 0, NULL) == NULL)
+    if (CreateThread(NULL, 0, ServerAcceptSocketThread, NULL, 0, NULL) == NULL)
     {
         qDebug() << "AcceptSocket Thread could not be created";
     }
@@ -79,13 +79,13 @@ bool setupListenSocket()
     return true;
 }
 
-DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
+DWORD WINAPI ServerAcceptSocketThread(LPVOID lpParameter)
 {
     qDebug() << "inside accept socket thread";
     SOCKET AcceptSocket;
     while(TRUE)
     {
-        createAcceptSocket(&ListenSocket, &AcceptSocket);
+        createAcceptSocket(&ServerListenSocket, &AcceptSocket);
         if (CreateThread(NULL, 0, FileTransferThread, (void*)AcceptSocket, 0, NULL) == NULL)
         {
             qDebug() << "File transfer (Accept) Socket could not be created";
@@ -217,7 +217,7 @@ bool setupServerMulticastSocket()
 void serverCleanup()
 {
     qDebug() << "server cleanup called";
-    closesocket(ListenSocket);
+    closesocket(ServerListenSocket);
     closesocket(sMcastStruct.Sock);
     WSACleanup();
 }
