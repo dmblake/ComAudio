@@ -9,10 +9,10 @@
 #include <sstream>
 #include "shared.h"
 
-void sendMessage(SOCKET sd, char* msg);
+void sendMessage(SOCKET sd, const char* msg);
 std::string rcvControlMessage(SOCKET sd);
 std::string listAllFiles(std::string extension);
-void sendFile(SOCKET sd, char* filename);
+void sendFile(SOCKET sd, const char* filename);
 void rcvFile(SOCKET sd, char* fname, int size);
 void handleControlMessages(SOCKET sd);
 void getListFromServer(SOCKET sd);
