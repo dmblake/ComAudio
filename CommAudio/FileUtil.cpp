@@ -1,11 +1,19 @@
 #include "FileUtil.h"
 
+void getFileFromServer(SOCKET sd, const char* fname, int size) {
+    std::string msg = "file{";
+    msg += fname;
+    sendMessage(sd, msg.c_str());
+    rcvFile(sd, fname, size);
+}
+
 void sendMessage(SOCKET sd, const char* msg) {
 	send(sd, msg, BUF_LEN, 0);
 }
 
-void getListFromServer(SOCKET sd) {
+std::string getListFromServer(SOCKET sd) {
     sendMessage(sd, "updatelist{");
+    return rcvControlMessage(sd);
 }
 
 void handleControlMessages(SOCKET sd) {
@@ -116,7 +124,7 @@ void sendFile(SOCKET sd, const char* filename) {
 	send(sd, bbuffer, size, 0);
 }
 
-void rcvFile(SOCKET sd, char* fname, int size) {
+void rcvFile(SOCKET sd, const char* fname, int size) {
 	char * bp;
 	char * rbuf = (char *) malloc(size);
 	int bytes_to_read;
