@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <QDebug>
 #include "bass.h"
 
 class CircularBuffer

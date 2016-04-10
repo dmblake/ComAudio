@@ -18,6 +18,7 @@ void processIO(char* data, DWORD len);
 void startClient();
 void playback();
 DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater);
+DWORD WINAPI PlaybackFileProc(LPVOID param);
 extern CircularBuffer* networkBuffer;
 extern Playback* playbackBuffer;
 extern MainWindow *mw;

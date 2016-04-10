@@ -17,12 +17,13 @@ DWORD CALLBACK fileReadProc(void *buffer, DWORD length, void *user)
 
 BOOL CALLBACK fileSeekProc(QWORD offset, void* user)
 {
+    // this function could be used for file seeking
+    // but i ain't doing that yet
     return true;
 }
 
 
 Playback::Playback(int size) : CircularBuffer(size){
-    //_cb = new CircularBuffer(size);
     fp.close = fileCloseProc;
     fp.length = fileOpenProc;
     fp.read = fileReadProc;
@@ -30,25 +31,74 @@ Playback::Playback(int size) : CircularBuffer(size){
 }
 
 Playback::~Playback() {
- /*
-    if (_cb != 0)
-        delete [] _cb;
-        */
+
 }
 
 BASS_FILEPROCS* Playback::getFP() {
     return &fp;
 }
-/*
-int Playback::write(const char * buf, int len) {
-    return _cb->write(buf, len);
+
+// call it in a thread
+DWORD Playback::playFromFile(const char * filename) {
+    HANDLE hFile;
+    wchar_t * wideStr;
+    int space = this->getSpaceAvailable();
+    char buf[BUF_LEN];
+    DWORD bytesRead = 0;
+    size_t lenC = mbsrtowcs(NULL, &filename, 0, NULL);
+    wchar_t * wideFile = new wchar_t[lenC+1]();
+    lenC = mbsrtowcs(wideFile, &filename, lenC+1, NULL);
+    // open file
+    hFile = CreateFile
+            (wideFile,               // file to open
+            GENERIC_READ,
+            0,
+            (LPSECURITY_ATTRIBUTES)NULL,       // share for reading
+            OPEN_EXISTING,         // existing file only
+            FILE_ATTRIBUTE_NORMAL, // normal file
+            (HANDLE)NULL);
+    delete wideFile;
+    if (hFile == INVALID_HANDLE_VALUE) {
+        qDebug() << "Failed to open file " << wideStr;
+        CloseHandle(hFile);
+        return 0;
+    }
+    // while space in buffer
+    while (ReadFile(hFile, buf, BUF_LEN, &bytesRead, 0)) {
+        if (bytesRead == 0) {
+            CloseHandle(hFile);
+            return 0;
+        }
+        // wait for space
+        space = this->getSpaceAvailable();
+        while (space < bytesRead) {
+            space = this->getSpaceAvailable();
+        }
+        this->write(buf, bytesRead);
+    }
+    CloseHandle(hFile);
+    return 0;
 }
 
-int Playback::read(char * buf, int len) {
-    return _cb->read(buf, len);
+DWORD Playback::startThread(LPVOID instance) {
+    Playback* pb = (Playback*)instance;
+    // filename must be set by calling function before this will successfully start a thread
+    if (pb->filename != 0 && strlen(pb->filename) > 0) {
+        qDebug() << "Starting thread";
+        return pb->playFromFile(pb->filename);
+    }
+    return 0;
 }
 
-int Playback::getAvailable() {
-    return _cb->getAvailable();
+bool Playback::setFilename(const char * fn) {
+    if (fn != 0) {
+        filename = (char*)malloc(strlen(fn));
+        if (filename == 0) {
+            // error malloc
+            return false;
+        }
+        strcpy(filename, fn);
+        return true;
+    }
+    return false;
 }
-*/
