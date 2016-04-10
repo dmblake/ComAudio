@@ -13,6 +13,23 @@ MainWindow::MainWindow(QWidget *parent) :
     mw = this;
 }
 
+
+MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),_client(client),_ipaddr(ipaddr),
+    ui(new Ui::MainWindow){
+
+    ui->setupUi(this);
+
+    if(server == true){
+        startServer();
+    }
+    else if (client == true){
+        startClientMulticastSession();
+    }
+    qDebug() << server;
+    qDebug() << client;
+    qDebug() << ipaddr;
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -30,12 +47,25 @@ void MainWindow::printToListView(std::string msg)
 //    playback();
 //}
 
-void MainWindow::on_pushButton_3_clicked()
+
+void MainWindow::on_playButton_clicked()
 {
-    startServer();
+    ui->playButton->setDisabled(true);
+    ui->pauseButton->setEnabled(true);
+    ui->stopButton->setEnabled(true);
 }
 
-void MainWindow::on_pushButton_4_clicked()
+void MainWindow::on_pauseButton_clicked()
 {
-    startClientMulticastSession();
+    ui->pauseButton->setDisabled(true);
+    ui->playButton->setEnabled(true);
+    ui->stopButton->setEnabled(true);
 }
+
+void MainWindow::on_stopButton_clicked()
+{
+    ui->stopButton->setDisabled(true);
+    ui->pauseButton->setEnabled(true);
+    ui->playButton->setEnabled(true);
+}
+

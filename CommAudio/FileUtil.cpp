@@ -1,7 +1,36 @@
 #include "FileUtil.h"
 
-void sendControlMessage(SOCKET sd, char* msg) {
+void getFileFromServer(SOCKET sd, const char* fname, int size) {
+    std::string msg = "file{";
+    msg += fname;
+    sendMessage(sd, msg.c_str());
+    rcvFile(sd, fname, size);
+}
+
+void sendMessage(SOCKET sd, const char* msg) {
 	send(sd, msg, BUF_LEN, 0);
+}
+
+std::string getListFromServer(SOCKET sd) {
+    sendMessage(sd, "updatelist{");
+    return rcvControlMessage(sd);
+}
+
+void handleControlMessages(SOCKET sd) {
+    while(true) {
+        std::string msg = rcvControlMessage(sd);
+        std::vector<std::string> splitmsg = split(msg, '{');
+
+        if (splitmsg[0] == "updatelist") {
+            std::string list = listAllFiles(".wav");
+            list += listAllFiles(".mp3");
+            sendMessage(sd, list.c_str());
+            continue;
+        }
+        if (splitmsg[0] == "file") {
+            sendFile(sd, splitmsg[1].c_str());
+        }
+    }
 }
 
 std::string rcvControlMessage(SOCKET sd) {
@@ -21,9 +50,8 @@ std::string rcvControlMessage(SOCKET sd) {
 			break;
 	}
 
-	// fix this
-
-	return "";
+	std::string msg = std::string(rbuf);
+	return msg;
 }
 
 std::string listAllFiles(std::string extension) {
@@ -70,7 +98,7 @@ std::string listAllFiles(std::string extension) {
 	return finalList;
 }
 
-void sendFile(SOCKET sd, char* filename) {
+void sendFile(SOCKET sd, const char* filename) {
 	std::filebuf *pbuf;
 	std::ifstream sourcestr;
 	long size;
@@ -96,7 +124,7 @@ void sendFile(SOCKET sd, char* filename) {
 	send(sd, bbuffer, size, 0);
 }
 
-void rcvFile(SOCKET sd, char* fname, int size) {
+void rcvFile(SOCKET sd, const char* fname, int size) {
 	char * bp;
 	char * rbuf = (char *) malloc(size);
 	int bytes_to_read;
@@ -123,3 +151,22 @@ void rcvFile(SOCKET sd, char* fname, int size) {
 		printf("NULL");
 	}
 }
+
+// puts result in a preconstructed vector
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+// returns a new vector
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
+

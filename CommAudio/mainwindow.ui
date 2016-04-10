@@ -76,7 +76,7 @@ selection-background-color: rgb(255, 255, 255,255);</string>
      <string/>
     </property>
     <property name="icon">
-     <iconset>
+     <iconset resource="images.qrc">
       <normaloff>:/new/prefix1/playCircle.png</normaloff>:/new/prefix1/playCircle.png</iconset>
     </property>
     <property name="iconSize">
@@ -110,6 +110,9 @@ selection-background-color: rgb(255, 255, 255,255);</string>
       <height>81</height>
      </rect>
     </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(75, 75, 75,0);
 color: rgb(255, 255, 255);
@@ -120,7 +123,7 @@ selection-background-color: rgb(255, 255, 255,255);</string>
      <string/>
     </property>
     <property name="icon">
-     <iconset>
+     <iconset resource="images.qrc">
       <normaloff>:/new/prefix1/pauseCircle.png</normaloff>:/new/prefix1/pauseCircle.png</iconset>
     </property>
     <property name="iconSize">
@@ -136,6 +139,9 @@ selection-background-color: rgb(255, 255, 255,255);</string>
      <bool>true</bool>
     </property>
     <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
      <bool>false</bool>
     </property>
    </widget>
@@ -156,7 +162,7 @@ color: rgb(255, 255, 255);</string>
      <string/>
     </property>
     <property name="icon">
-     <iconset>
+     <iconset resource="images.qrc">
       <normaloff>:/new/prefix1/stopCircle.png</normaloff>:/new/prefix1/stopCircle.png</iconset>
     </property>
     <property name="iconSize">
@@ -222,7 +228,7 @@ color: rgb(255, 255, 255);</string>
      <string notr="true">color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
-     <string>updateList</string>
+     <string>Update List</string>
     </property>
    </widget>
    <widget class="QLabel" name="playListTitle_2">
@@ -230,7 +236,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>680</x>
       <y>330</y>
-      <width>221</width>
+      <width>231</width>
       <height>20</height>
      </rect>
     </property>
@@ -253,38 +259,6 @@ color: rgb(255, 255, 255);</string>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
-    <property name="geometry">
-     <rect>
-      <x>360</x>
-      <y>180</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color: rgb(255, 255, 255);</string>
-    </property>
-    <property name="text">
-     <string>Start Server</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_4">
-    <property name="geometry">
-     <rect>
-      <x>354</x>
-      <y>240</y>
-      <width>111</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color: rgb(255, 255, 255);</string>
-    </property>
-    <property name="text">
-     <string>Start Mulicast Client</string>
-    </property>
-   </widget>
   </widget>
   <action name="actionWaddup">
    <property name="text">
@@ -293,6 +267,8 @@ color: rgb(255, 255, 255);</string>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>
