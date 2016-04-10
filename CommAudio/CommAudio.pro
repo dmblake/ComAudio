@@ -43,3 +43,6 @@ INCLUDEPATH += D:\QtProjects\ComAudio\CommAudio\lib
 
 FORMS    += mainwindow.ui \
     settingsdialog.ui
+
+RESOURCES += \
+    images.qrc
