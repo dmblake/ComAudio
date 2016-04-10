@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>pauseCircle.png</file>
+        <file>playCircle.png</file>
+        <file>stopCircle.png</file>
+    </qresource>
+</RCC>
