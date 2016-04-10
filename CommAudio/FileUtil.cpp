@@ -1,6 +1,6 @@
 #include "FileUtil.h"
 
-void sendMessage(SOCKET sd, char* msg) {
+void sendMessage(SOCKET sd, const char* msg) {
 	send(sd, msg, BUF_LEN, 0);
 }
 
@@ -11,7 +11,7 @@ void getListFromServer(SOCKET sd) {
 void handleControlMessages(SOCKET sd) {
     while(true) {
         std::string msg = rcvControlMessage(sd);
-        std::vector<std::string> splitmsg = split(msg, "{");
+        std::vector<std::string> splitmsg = split(msg, '{');
 
         if (splitmsg[0] == "updatelist") {
             std::string list = listAllFiles(".wav");
@@ -90,7 +90,7 @@ std::string listAllFiles(std::string extension) {
 	return finalList;
 }
 
-void sendFile(SOCKET sd, char* filename) {
+void sendFile(SOCKET sd, const char* filename) {
 	std::filebuf *pbuf;
 	std::ifstream sourcestr;
 	long size;
