@@ -1,7 +1,28 @@
 #include "FileUtil.h"
 
-void sendControlMessage(SOCKET sd, char* msg) {
+void sendMessage(SOCKET sd, char* msg) {
 	send(sd, msg, BUF_LEN, 0);
+}
+
+void getListFromServer(SOCKET sd) {
+    sendMessage(sd, "updatelist{");
+}
+
+void handleControlMessages(SOCKET sd) {
+    while(true) {
+        std::string msg = rcvControlMessage(sd);
+        std::vector<std::string> splitmsg = split(msg, "{");
+
+        if (splitmsg[0] == "updatelist") {
+            std::string list = listAllFiles(".wav");
+            list += listAllFiles(".mp3");
+            sendMessage(sd, list.c_str());
+            continue;
+        }
+        if (splitmsg[0] == "file") {
+            sendFile(sd, splitmsg[1].c_str());
+        }
+    }
 }
 
 std::string rcvControlMessage(SOCKET sd) {
@@ -21,9 +42,8 @@ std::string rcvControlMessage(SOCKET sd) {
 			break;
 	}
 
-	// fix this
-
-	return "";
+	std::string msg = std::string(rbuf);
+	return msg;
 }
 
 std::string listAllFiles(std::string extension) {
@@ -123,3 +143,22 @@ void rcvFile(SOCKET sd, char* fname, int size) {
 		printf("NULL");
 	}
 }
+
+// puts result in a preconstructed vector
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+// returns a new vector
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
+
