@@ -5,7 +5,6 @@
 #include "main.h"
 #include "network.h"
 #include "server.h"
-#include "client.h"
 #include "settingsDialog.h"
 #include <iostream>
 

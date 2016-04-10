@@ -2,6 +2,7 @@
 
 #include "client.h"
 #include "mainwindow.h"
+#include "FileUtil.h"
 SOCKET TcpSocket;
 SOCKET UdpSocket;
 SOCKET ClientMulticastSocket;
@@ -117,10 +118,9 @@ DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
 
 void startFileTransfer()
 {
-    if (!setupTcpSocket())
-    {
-        qDebug() << "Failed to setup TCP Socket";
-    }
+    std::string str = getListFromServer(TcpSocket);
+    QString qstr = QString::fromStdString(str);
+    qDebug() << qstr;
 }
 
 void startClientMulticastSession()
@@ -150,9 +150,11 @@ void startClientMulticastSession()
 /*
 * Creates and connects the TCP Socket used for both control and file transfer
 */
-bool setupTcpSocket()
+bool setupTcpSocket(QString ipaddr)
 {
     struct hostent *hp;
+    QByteArray ipArray = ipaddr.toUtf8();
+    const char* ipAddress = ipArray;
 
     if ((TcpSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
     {
@@ -163,7 +165,7 @@ bool setupTcpSocket()
     memset((char *)&serverAddr, 0, sizeof(struct sockaddr_in));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(PORT);
-    if ((hp = gethostbyname(SERVER_IP)) == NULL)
+    if ((hp = gethostbyname(ipAddress)) == NULL)
     {
         qDebug() << "TCP Unknown server address";
         return false;
@@ -185,7 +187,7 @@ bool setupTcpSocket()
     qDebug() << "Connected: Server Name: " << hp->h_name;
 
     // Close the socket right way for testing
-    closesocket(TcpSocket);
+    //closesocket(TcpSocket);
     return true;
 }
 
@@ -342,7 +344,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
 
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
 {
-    qDebug() << "inside completion routine";
+    //qDebug() << "inside completion routine";
     DWORD RecvBytes = 0;
     DWORD Flags = 0;
     int addrSize = sizeof(sockaddr_in);
@@ -378,7 +380,7 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 
 void processIO(char* data, DWORD len)
 {
-    qDebug() << data;
+    //qDebug() << data;
     if (networkBuffer->getSpaceAvailable() > len) {
         networkBuffer->write(data, len);
     }

@@ -3,5 +3,6 @@
         <file>pauseCircle.png</file>
         <file>playCircle.png</file>
         <file>stopCircle.png</file>
+        <file>microphoneCircle.png</file>
     </qresource>
 </RCC>
