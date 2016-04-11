@@ -86,12 +86,13 @@ DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
         }
 
         //close accept socket after passing a copy to the thread
-        closesocket(AcceptSocket);
+        //closesocket(AcceptSocket);
     }
 }
 
 DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 {
+    qDebug() << "in file transfer thread";
     SOCKET fileTransferSocket = (SOCKET)lpParameter;
     
     handleControlMessages(fileTransferSocket);

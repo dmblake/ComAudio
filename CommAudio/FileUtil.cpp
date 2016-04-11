@@ -18,18 +18,23 @@ std::string getListFromServer(SOCKET sd) {
 }
 
 void handleControlMessages(SOCKET sd) {
+    qDebug() << "handle control messages";
     while(true) {
         std::string msg = rcvControlMessage(sd);
+        qDebug() << msg.c_str();
         std::vector<std::string> splitmsg = split(msg, '{');
 
         if (splitmsg[0] == "updatelist") {
+            qDebug() << "updatelist";
             std::string list = listAllFiles(".wav");
             list += listAllFiles(".mp3");
             sendMessage(sd, list.c_str());
         } else if (splitmsg[0] == "file") {
+            qDebug() << "file";
             sendFile(sd, splitmsg[1].c_str());
-        } else {
 
+        } else {
+            qDebug() << "no match";
         }
     }
 }
@@ -50,7 +55,7 @@ std::string rcvControlMessage(SOCKET sd) {
 		if (n == 0)
 			break;
 	}
-
+    qDebug() << rbuf;
 	std::string msg = std::string(rbuf);
 	return msg;
 }
