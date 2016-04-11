@@ -133,7 +133,7 @@ void startFileTransfer()
     }
 
     QString qstr = QString::fromStdString(str);
-    qDebug() << qstr;
+    qDebug() << str.c_str();
 }
 
 void startClientMulticastSession()
