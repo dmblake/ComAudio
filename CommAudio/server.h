@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "network.h"
 #include "circularbuffer.h"
+#include "FileUtil.h"
 void startServer();
 bool setupServerListenSocket();
 DWORD WINAPI FileTransferThread(LPVOID lpParameter);

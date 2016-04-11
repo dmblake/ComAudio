@@ -24,6 +24,9 @@ private slots:
     void on_playButton_clicked();
     void on_stopButton_clicked();
     void on_pauseButton_clicked();
+
+    void on_updateButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;

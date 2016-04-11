@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "server.h"
+#include "FileUtil.h"
 #include "client.h"
 
 // hank revision
@@ -17,14 +18,18 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),_client(client),_ipaddr(ipaddr),
     ui(new Ui::MainWindow){
 
+
     ui->setupUi(this);
+    mw = this;
 
     if(server == true){
         startServer();
     }
     else if (client == true){
         startClientMulticastSession();
+        setupTcpSocket(ipaddr);
     }
+
     qDebug() << server;
     qDebug() << client;
     qDebug() << ipaddr;
@@ -69,3 +74,9 @@ void MainWindow::on_stopButton_clicked()
     ui->playButton->setEnabled(true);
 }
 
+
+
+void MainWindow::on_updateButton_clicked()
+{
+    startFileTransfer();
+}

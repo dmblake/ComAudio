@@ -25,10 +25,10 @@ void handleControlMessages(SOCKET sd) {
             std::string list = listAllFiles(".wav");
             list += listAllFiles(".mp3");
             sendMessage(sd, list.c_str());
-            continue;
-        }
-        if (splitmsg[0] == "file") {
+        } else if (splitmsg[0] == "file") {
             sendFile(sd, splitmsg[1].c_str());
+        } else {
+        	
         }
     }
 }

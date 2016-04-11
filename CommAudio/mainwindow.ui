@@ -199,7 +199,7 @@ color: rgb(255, 255, 255);</string>
      <string>Playlist</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="downloadButton">
     <property name="geometry">
      <rect>
       <x>680</x>
@@ -215,7 +215,7 @@ color: rgb(255, 255, 255);</string>
      <string>Download</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="updateButton">
     <property name="geometry">
      <rect>
       <x>770</x>
@@ -231,7 +231,7 @@ color: rgb(255, 255, 255);</string>
      <string>Update List</string>
     </property>
    </widget>
-   <widget class="QLabel" name="playListTitle_2">
+   <widget class="QLabel" name="downloadTitle">
     <property name="geometry">
      <rect>
       <x>680</x>
@@ -249,7 +249,7 @@ color: rgb(255, 255, 255);</string>
      <string>Files to Download</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="listWidget_2">
+   <widget class="QListWidget" name="downloadList">
     <property name="geometry">
      <rect>
       <x>680</x>
@@ -257,6 +257,35 @@ color: rgb(255, 255, 255);</string>
       <width>241</width>
       <height>91</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="microphoneButton">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>380</y>
+      <width>71</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(75, 75, 75,0);
+color: rgb(255, 255, 255);
+alternate-background-color: rgb(75, 75, 75);
+selection-background-color: rgb(255, 255, 255,255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="images.qrc">
+      <normaloff>:/new/prefix1/microphoneCircle.png</normaloff>:/new/prefix1/microphoneCircle.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
     </property>
    </widget>
   </widget>
