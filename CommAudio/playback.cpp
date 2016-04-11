@@ -3,10 +3,13 @@
 
 void CALLBACK fileCloseProc(void *user)
 {
+    ((Playback*)user)->setPlaying(false);
+    //((Playback*)user)->clear();
 }
 
 QWORD CALLBACK fileOpenProc(void *user)
 {
+    ((Playback*)user)->setPlaying(true);
     return 0;
 }
 
@@ -80,6 +83,14 @@ DWORD Playback::playFromFile(const char * filename) {
     _reset = false;
     CloseHandle(hFile);
     return 0;
+}
+
+bool Playback::isPlaying() {
+    return _playing;
+}
+
+void Playback::setPlaying(bool val) {
+    _playing = val;
 }
 
 DWORD Playback::startThread(LPVOID instance) {

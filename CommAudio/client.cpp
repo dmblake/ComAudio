@@ -32,11 +32,6 @@ void startClient(MainWindow* window)
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
         mw->printToListView("Failed to init BASS");
     }
-/*
-    if (playbackBuffer->setFilename("C:\\Users\\Think_Admin\\Desktop\\whistle.wav")) {
-        CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
-    }
-    */
 }
 
 // handles when you press the play button
@@ -44,6 +39,7 @@ void startClient(MainWindow* window)
 void playback()
 {
     mw->setPlaying(true);
+    playbackBuffer->setPlaying(true);
     if (hPlaybackThread != INVALID_HANDLE_VALUE) {
         CloseHandle(hPlaybackThread);
         hPlaybackThread = INVALID_HANDLE_VALUE;
@@ -65,7 +61,7 @@ void setFilename(std::string str) {
 DWORD WINAPI PlaybackFileProc(LPVOID param) {
     HSTREAM str = 0;
     Playback* pb = (Playback*)param;
-    while (mw->isPlaying()) {
+    while (mw->isPlaying() && pb->isPlaying()) {
         if (str == 0) {
             if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
                 qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
@@ -87,6 +83,7 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
             BASS_ChannelPlay(str, FALSE);
             break;
         }
+        // if data is in the buffer, start any stopped stream
         if (pb->getDataAvailable() > 20000) {
             switch (BASS_ChannelIsActive(str)) {
             case BASS_ACTIVE_PAUSED:
@@ -117,6 +114,11 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
         break;
     case BASS_ACTIVE_PAUSED:
         BASS_ChannelPause(str);
+        break;
+    case BASS_ACTIVE_PLAYING:
+        while(pb->isPlaying()) {}
+        mw->setPlaying(false);
+        mw->_playingState = BASS_ACTIVE_STOPPED;
         break;
     }
 
