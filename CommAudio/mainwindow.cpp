@@ -96,3 +96,24 @@ void MainWindow::on_playButton_client_clicked()
 {
     startClientMulticastSession();
 }
+
+// hank revis
+void MainWindow::on_refreshButton_clicked()
+{
+    std::string extension = ".mp3";
+    std::string serverList = listAllFiles(extension);
+    std::vector<std::string> list = split(serverList, '\n');
+    for (std::string elem : list) {
+        QString str = QString::fromStdString(elem);
+        ui->listWidget->addItem(str);
+    }
+
+    qDebug()<< serverList.c_str();
+}
+
+
+//void MainWindow::on_microphoneButton_server_clicked()
+//{
+
+//    //MircophoneDialog c(this);
+//}
