@@ -452,8 +452,8 @@ DWORD WINAPI ClientAcceptSocketThread(LPVOID lpParameter)
 void clientCleanup()
 {
     qDebug() << "client cleanup called";
-    closesocket(TcpSocket);
-    closesocket(UdpSocket);
-    closesocket(cMcastStruct.Sock);
+    //closesocket(TcpSocket);
+    //closesocket(UdpSocket);
+    //closesocket(cMcastStruct.Sock);
     WSACleanup();
 }

@@ -24,6 +24,6 @@ typedef struct _SOCKET_INFORMATION {
     DWORD BytesRECV;
 } SOCKET_INFORMATION, *LPSOCKET_INFORMATION;
 
-
+extern bool isServer;
 
 #endif // SHARED_H

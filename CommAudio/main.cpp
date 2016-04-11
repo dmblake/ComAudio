@@ -8,6 +8,7 @@
 #include "settingsDialog.h"
 #include <iostream>
 
+bool server;
 
 int main(int argc, char *argv[])
 {
@@ -27,9 +28,14 @@ int main(int argc, char *argv[])
     //setUdpSocket();
 
     int r = a.exec();
-
-    serverCleanup();
-    clientCleanup();
+    if (isServer)
+    {
+        serverCleanup();
+    }
+    else
+    {
+        clientCleanup();
+    }
 
     return r;
 }
