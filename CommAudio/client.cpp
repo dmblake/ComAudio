@@ -478,3 +478,7 @@ void changePlayback(DWORD state) {
         break;
     }
 }
+
+void downloadFile(const char* filename){
+    getFileFromServer(TcpSocket, filename, 357420);
+}
