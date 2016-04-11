@@ -434,3 +434,7 @@ void clientCleanup()
     //closesocket(cMcastStruct.Sock);
     WSACleanup();
 }
+
+void downloadFile(const char* filename){
+    getFileFromServer(TcpSocket, filename, 9416985);
+}

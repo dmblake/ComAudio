@@ -384,7 +384,7 @@ color: rgb(255, 255, 255);</string>
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidget_2">
+     <widget class="QListWidget" name="playlistWidget">
       <property name="geometry">
        <rect>
         <x>640</x>
@@ -567,8 +567,8 @@ color: rgb(255, 255, 255);</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="images.qrc"/>
   <include location="qdarkstyle/style.qrc"/>
+  <include location="images.qrc"/>
  </resources>
  <connections/>
 </ui>

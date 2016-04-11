@@ -149,8 +149,18 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 
 void MainWindow::on_downloadButton_clicked()
 {
-    QList<QListWidgetItem> *selected = ui->listWidget_serverFiles->selectedItems();
-    std::string songToDownload = selected[0]->
-    qDebug() << songToDownload.c_str();
-    ui->listWidget_serverFiles->;
+
+    QListWidgetItem *selected = ui->listWidget_serverFiles->currentItem();
+    std::string songToDownload = selected->text().toStdString();
+    //qDebug() << songToDownload.c_str();
+    downloadFile(songToDownload.c_str());
+
+    ui->playlistWidget->clear();
+    std::string serverList = listAllFiles(".wav");
+    serverList += listAllFiles(".mp3");
+    std::vector<std::string> list = split(serverList, '\n');
+    for (std::string elem : list) {
+        QString str = QString::fromStdString(elem);
+        ui->playlistWidget->addItem(str);
+    }
 }
