@@ -29,14 +29,14 @@ int main(int argc, char *argv[])
     //setUdpSocket();
 
     int r = a.exec();
-    if (isServer)
-    {
-        serverCleanup();
-    }
-    else
-    {
-        clientCleanup();
-    }
+//    if (isServer)
+//    {
+//        serverCleanup();
+//    }
+//    else
+//    {
+//        clientCleanup();
+//    }
 
     return r;
 }

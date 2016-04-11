@@ -25,6 +25,7 @@ private slots:
     void on_playButton_server_clicked();
 
     void on_playButton_client_clicked();
+    void on_refreshButton_clicked();
 
 private:
     Ui::MainWindow *ui;
