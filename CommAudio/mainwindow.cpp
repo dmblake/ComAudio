@@ -51,7 +51,6 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
-        startClientMulticastSession();
         setupTcpSocket(ipaddr);
         isServer = false;
     }
@@ -91,4 +90,9 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_playButton_server_clicked()
 {
     startServerMulticastSession();
+}
+
+void MainWindow::on_playButton_client_clicked()
+{
+    startClientMulticastSession();
 }
