@@ -45,4 +45,5 @@ FORMS    += mainwindow.ui \
     settingsdialog.ui
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    qdarkstyle/style.qrc

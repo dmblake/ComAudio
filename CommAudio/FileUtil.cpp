@@ -25,10 +25,10 @@ void handleControlMessages(SOCKET sd) {
             std::string list = listAllFiles(".wav");
             list += listAllFiles(".mp3");
             sendMessage(sd, list.c_str());
-            continue;
-        }
-        if (splitmsg[0] == "file") {
+        } else if (splitmsg[0] == "file") {
             sendFile(sd, splitmsg[1].c_str());
+        } else {
+
         }
     }
 }
@@ -69,7 +69,7 @@ std::string listAllFiles(std::string extension) {
 	    		std::string fname = dir->d_name;
 	    		if (fname.find(extension, (fname.length() - extension.length())) != std::string::npos) {
 	    			finalList += fname;
-	    			finalList += ", ";
+	    			finalList += ",";
 
 	    			// file size
 	    			long size;

@@ -7,7 +7,7 @@
 #include "playback.h"
 #include "bass.h"
 void startFileTransfer();
-bool setupTcpSocket();
+bool setupTcpSocket(QString ipaddr);
 bool setUdpSocket();
 bool setupClientMulticastSocket();
 void clientCleanup();
