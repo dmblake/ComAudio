@@ -9,6 +9,7 @@ settingsDialog::settingsDialog(QWidget *parent) :
 
     ui->setupUi(this);
     this->setWindowFlags(Qt::FramelessWindowHint);
+    ui->clientText->setText("127.0.0.1");
 
 }
 

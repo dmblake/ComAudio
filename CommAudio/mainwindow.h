@@ -19,13 +19,8 @@ public:
 
 private slots:
 
-    //void on_playbackButton_clicked();
-
-    void on_playButton_clicked();
-    void on_stopButton_clicked();
-    void on_pauseButton_clicked();
-
     void on_updateButton_clicked();
+    void on_close_clicked();
 
 private:
     Ui::MainWindow *ui;
