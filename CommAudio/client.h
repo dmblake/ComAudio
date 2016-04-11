@@ -19,6 +19,7 @@ void startClient();
 void playback();
 DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater);
 DWORD WINAPI PlaybackFileProc(LPVOID param);
+void setFilename(QString str);
 extern CircularBuffer* networkBuffer;
 extern Playback* playbackBuffer;
 extern MainWindow *mw;

@@ -31,10 +31,11 @@ void startClient()
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
         mw->printToListView("Failed to init BASS");
     }
-
+/*
     if (playbackBuffer->setFilename("C:\\Users\\Think_Admin\\Desktop\\whistle.wav")) {
         CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
     }
+    */
 }
 
 // handles when you press the play button
@@ -44,7 +45,14 @@ void playback()
     playing = true;
    // hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, playbackBuffer, 0, NULL);
     CreateThread(NULL,0, PlaybackFileProc, playbackBuffer, 0, NULL);
+    CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
 
+}
+
+void setFilename(QString str) {
+    QByteArray ba = str.toLatin1();
+    const char * tmp = ba.data();
+    playbackBuffer->setFilename(tmp);
 }
 
 DWORD WINAPI PlaybackFileProc(LPVOID param) {
