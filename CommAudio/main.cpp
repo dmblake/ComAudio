@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 
     int r = a.exec();
 
-    serverCleanup();
-    clientCleanup();
+    //serverCleanup();
+    //clientCleanup();
 
     return r;
 }
