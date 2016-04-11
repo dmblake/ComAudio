@@ -47,12 +47,14 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     if(_server == true){
         ui->tabWidget->setTabEnabled(1,false);
         startServer();
+        startClient();
         isServer = true;
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
+        startClient();
     }
 
     qDebug() << server;
@@ -90,11 +92,13 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_playButton_server_clicked()
 {
     startServerMulticastSession();
+    playback();
 }
 
 void MainWindow::on_playButton_client_clicked()
 {
     startClientMulticastSession();
+    playback();
 }
 
 // hank revis
@@ -117,3 +121,18 @@ void MainWindow::on_refreshButton_clicked()
 
 //    //MircophoneDialog c(this);
 //}
+
+// client side item selection
+void MainWindow::on_listWidget_2_itemClicked(QListWidgetItem *item)
+{
+    QString txt = item->text();
+    //setFilename(txt);
+}
+
+// server side item selection
+void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
+{
+    std::string txt = item->text().toUtf8().constData();
+    std::vector<std::string> vec = split(txt, ',');
+    setFilename(vec[0]);
+}

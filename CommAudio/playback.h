@@ -1,12 +1,8 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "bass.h"
 #include "circularbuffer.h"
-#define BUF_LEN 1024
+
 
 
 
@@ -26,7 +22,7 @@ public:
     */
 private:
  //   CircularBuffer* _cb;
-    BASS_FILEPROCS fp;   
+    BASS_FILEPROCS fp;
     char * filename; // holds a file to read from
 };
 

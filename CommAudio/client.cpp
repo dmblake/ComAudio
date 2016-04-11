@@ -49,10 +49,8 @@ void playback()
 
 }
 
-void setFilename(QString str) {
-    QByteArray ba = str.toLatin1();
-    const char * tmp = ba.data();
-    playbackBuffer->setFilename(tmp);
+void setFilename(std::string str) {
+    playbackBuffer->setFilename(str.c_str());
 }
 
 DWORD WINAPI PlaybackFileProc(LPVOID param) {

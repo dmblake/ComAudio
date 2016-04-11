@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QListWidget>
 
 namespace Ui {
 class MainWindow;
@@ -27,11 +28,16 @@ private slots:
     void on_playButton_client_clicked();
     void on_refreshButton_clicked();
 
+    void on_listWidget_2_itemClicked(QListWidgetItem *item);
+
+    void on_listWidget_itemClicked(QListWidgetItem *item);
+
 private:
     Ui::MainWindow *ui;
     bool _server;
     bool _client;
     QString _ipaddr;
+
 };
 
 #endif // MAINWINDOW_H
