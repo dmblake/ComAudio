@@ -97,14 +97,18 @@ void MainWindow::on_playButton_client_clicked()
     startClientMulticastSession();
 }
 
-
+// hank revis
 void MainWindow::on_refreshButton_clicked()
 {
     std::string extension = ".mp3";
     std::string serverList = listAllFiles(extension);
-    QString str = QString::fromStdString(serverList);
-    ui->listWidget->addItem(str);
-    qDebug()<< str;
+    std::vector<std::string> list = split(serverList, '\n');
+    for (std::string elem : list) {
+        QString str = QString::fromStdString(elem);
+        ui->listWidget->addItem(str);
+    }
+
+    qDebug()<< serverList.c_str();
 }
 
 
