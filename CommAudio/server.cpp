@@ -21,9 +21,7 @@ void startServer()
     else
     {
         qDebug() << "Listen Socket OK";
-    }
-
-    startServerMulticastSession();
+    }    
 }
 
 

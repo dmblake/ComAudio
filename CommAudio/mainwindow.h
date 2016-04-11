@@ -22,6 +22,10 @@ private slots:
     void on_updateButton_clicked();
     void on_close_clicked();
 
+    void on_playButton_server_clicked();
+
+    void on_playButton_client_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;
