@@ -5,6 +5,7 @@
 #include "FileUtil.h"
 SOCKET TcpSocket;
 SOCKET UdpSocket;
+SOCKET ClientListenSocket;
 SOCKET ClientMulticastSocket;
 struct ip_mreq ClientMreq;
 struct sockaddr_in serverAddr;
@@ -26,6 +27,11 @@ void startClient()
     playbackBuffer = new Playback(MAX_BUF);
     networkBuffer = new CircularBuffer(MAX_BUF);
 
+    // For mic conversations
+    if (!setupClientListenSocket())
+    {
+        qDebug() << "Failed to set up client listen socket";
+    }
 
     if (!BASS_Init(-1, 44100, 0, 0, 0)) {
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
@@ -36,6 +42,66 @@ void startClient()
         CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
     }
     */
+}
+
+bool setupClientListenSocket()
+{
+    qDebug()<< "setupClientListenSocket called";
+    createTcpSocket(&ClientListenSocket);
+
+    // set reuseaddr
+    setsockopt(ClientListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
+
+    // Change the port in the myAddr struct to the default port
+    myAddr.sin_port = htons(MIC_PORT);
+
+    // Bind the listen socket
+    if (bind(ClientListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
+    {
+        qDebug() << "Failed to bind the listen socket";
+        return false;
+    }
+
+    // Setup the ListenSocket to listen for incoming connections
+    // with a backlog size 5
+    if (listen(ClientListenSocket, 5))
+    {
+        qDebug() << "listen() failed";
+        return false;
+    }
+
+
+    /*if (CreateThread(NULL, 0, AcceptSocketThread, NULL, 0, NULL) == NULL)
+    {
+        qDebug() << "AcceptSocket Thread could not be created";
+    }*/
+
+    return true;
+}
+
+DWORD WINAPI ClientAcceptSocketThread(LPVOID param)
+{
+    qDebug() << "inside accept socket thread";
+    SOCKET AcceptSocket;
+    while(TRUE)
+    {
+        createAcceptSocket(&ClientListenSocket, &AcceptSocket);
+        if (CreateThread(NULL, 0, MicrophoneSessionThread, (void*)AcceptSocket, 0, NULL) == NULL)
+        {
+            qDebug() << "File transfer (Accept) Socket could not be created";
+        }
+
+        //close accept socket after passing a copy to the thread
+        //closesocket(AcceptSocket);
+    }
+}
+
+DWORD WINAPI MicrophoneSessionThread(LPVOID lpParameter)
+{
+    SOCKET fileTransferSocket = (SOCKET)lpParameter;
+
+    // Handle microphone stuff here
+    return 0;
 }
 
 // handles when you press the play button
