@@ -117,9 +117,22 @@ DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
     return 1;
 } // end thread proc
 
+// hank
 void startFileTransfer()
 {
     std::string str = getListFromServer(TcpSocket);
+
+    std::vector<std::string> filesAndSizes = split(str, '\n');
+
+    for (auto elem : filesAndSizes) {
+        // each vector will have 2 elements - the file name, and the size
+        std::vector<std::string> singleFnameAndSize = split(elem, ',');
+
+        // access singleFnameAndSize[0] to get the filename
+        // access singleFnameAndSize[1] to get the size in string form
+        // update your listwidget thingy here
+    }
+
     QString qstr = QString::fromStdString(str);
     qDebug() << qstr;
 }

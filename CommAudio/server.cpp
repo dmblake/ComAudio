@@ -87,8 +87,8 @@ DWORD WINAPI ServerAcceptSocketThread(LPVOID lpParameter)
             qDebug() << "File transfer (Accept) Socket could not be created";
         }
 
-        // //close accept socket after passing a copy to the thread
-        // closesocket(AcceptSocket);
+        //close accept socket after passing a copy to the thread
+        closesocket(AcceptSocket);
     }
 }
 
