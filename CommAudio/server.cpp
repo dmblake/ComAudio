@@ -106,7 +106,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     HANDLE hFile;
     int nRet;
     hFile = CreateFile
-            (L"C:\\luv.mp3",               // file to open
+            (L"C:\\test\\06 Holland, 1945.mp3",               // file to open
             GENERIC_READ,
             0,
             (LPSECURITY_ATTRIBUTES)NULL,       // share for reading

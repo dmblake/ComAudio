@@ -8,7 +8,8 @@ void getFileFromServer(SOCKET sd, const char* fname, int size) {
 }
 
 void sendMessage(SOCKET sd, const char* msg) {
-	send(sd, msg, BUF_LEN, 0);
+    int err = send(sd, msg, BUF_LEN, 0);
+    qDebug() << err;
 }
 
 std::string getListFromServer(SOCKET sd) {

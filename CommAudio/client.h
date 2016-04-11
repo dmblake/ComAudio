@@ -6,7 +6,8 @@
 #include "network.h"
 #include "playback.h"
 #include "bass.h"
-void startFileTransfer();
+void downloadFile(const char* filename);
+std::vector<std::string> updateServerFiles();
 bool setupTcpSocket(QString ipaddr);
 bool setUdpSocket();
 bool setupClientMulticastSocket();
@@ -18,6 +19,8 @@ void processIO(char* data, DWORD len);
 void startClient();
 void playback();
 DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater);
+DWORD WINAPI PlaybackFileProc(LPVOID param);
+void setFilename(std::string str);
 extern CircularBuffer* networkBuffer;
 extern Playback* playbackBuffer;
 extern MainWindow *mw;
