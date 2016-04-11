@@ -4,6 +4,7 @@
 #include "FileUtil.h"
 #include "client.h"
 
+bool isServer;
 // hank revision
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -24,10 +25,12 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
 
     if(server == true){
         startServer();
+        isServer = true;
     }
     else if (client == true){
         startClientMulticastSession();
         setupTcpSocket(ipaddr);
+        isServer = false;
     }
 
     qDebug() << server;

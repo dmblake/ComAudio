@@ -402,8 +402,8 @@ void processIO(char* data, DWORD len)
 void clientCleanup()
 {
     qDebug() << "client cleanup called";
-    closesocket(TcpSocket);
-    closesocket(UdpSocket);
-    closesocket(cMcastStruct.Sock);
+    //closesocket(TcpSocket);
+    //closesocket(UdpSocket);
+    //closesocket(cMcastStruct.Sock);
     WSACleanup();
 }
