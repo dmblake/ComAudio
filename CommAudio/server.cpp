@@ -23,11 +23,6 @@ void startServer()
         qDebug() << "Listen Socket OK";
     }
 
-    if((hFileTransferThread = CreateThread(NULL, 0, FileTransferThread, NULL, 0, NULL)) == NULL)
-    {
-        qDebug() << "create FileTransferThread failed";
-    }
-
     startServerMulticastSession();
 }
 
@@ -79,6 +74,7 @@ bool setupListenSocket()
     return true;
 }
 
+// hank revis
 DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
 {
     qDebug() << "inside accept socket thread";
@@ -91,18 +87,17 @@ DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
             qDebug() << "File transfer (Accept) Socket could not be created";
         }
 
-        //close accept socket after passing a copy to the thread
-        closesocket(AcceptSocket);
+        // //close accept socket after passing a copy to the thread
+        // closesocket(AcceptSocket);
     }
 }
 
 DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 {
     SOCKET fileTransferSocket = (SOCKET)lpParameter;
-    //send stuff here and reveive stuff here
+    
+    handleControlMessages(fileTransferSocket);
 
-    //close socket right away for testing
-    closesocket(fileTransferSocket);
     return 0;
 }
 
