@@ -7,14 +7,17 @@ void getFileFromServer(SOCKET sd, const char* fname, int size) {
     rcvFile(sd, fname, size);
 }
 
-void sendMessage(SOCKET sd, const char* msg) {
+int sendMessage(SOCKET sd, const char* msg) {
     int err = send(sd, msg, BUF_LEN, 0);
-    qDebug() << err;
+    return err;
 }
 
 std::string getListFromServer(SOCKET sd) {
-    sendMessage(sd, "updatelist{");
-    return rcvControlMessage(sd);
+    if (sendMessage(sd, "updatelist{") != -1) {
+        return rcvControlMessage(sd);
+    } else {
+        return "";
+    }
 }
 
 void handleControlMessages(SOCKET sd) {
