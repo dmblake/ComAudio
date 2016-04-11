@@ -47,12 +47,14 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     if(_server == true){
         ui->tabWidget->setTabEnabled(1,false);
         startServer();
+        startClient();
         isServer = true;
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
+        startClient();
     }
 
     qDebug() << server;
@@ -99,11 +101,13 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_playButton_server_clicked()
 {
     startServerMulticastSession();
+    playback();
 }
 
 void MainWindow::on_playButton_client_clicked()
 {
     startClientMulticastSession();
+    playback();
 }
 
 // hank revis
