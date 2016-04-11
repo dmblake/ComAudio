@@ -26,6 +26,10 @@ private slots:
 
     void on_playButton_client_clicked();
 
+    void on_refreshButton_clicked();
+
+    void on_microphoneButton_server_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;

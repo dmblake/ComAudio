@@ -3,6 +3,7 @@
 #include "server.h"
 #include "FileUtil.h"
 #include "client.h"
+#include "microphonedialog.h"
 #include <QFile>
 #include <QTextStream>
 
@@ -96,3 +97,19 @@ void MainWindow::on_playButton_client_clicked()
 {
     startClientMulticastSession();
 }
+
+void MainWindow::on_refreshButton_clicked()
+{
+    std::string extension = "mp3";
+    std::string serverList = listAllFiles(extension);
+    QString str = QString::fromStdString(serverList);
+    qDebug()<< str;
+}
+
+
+void MainWindow::on_microphoneButton_server_clicked()
+{
+
+    MircophoneDialog c(this);
+}
+
