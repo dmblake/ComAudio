@@ -110,8 +110,8 @@ void MainWindow::on_playButton_client_clicked()
 void MainWindow::on_refreshButton_clicked()
 {
     ui->listWidget->clear();
-    std::string extension = ".mp3";
-    std::string serverList = listAllFiles(extension);
+    std::string serverList = listAllFiles(".wav");
+    serverList += listAllFiles(".mp3");
     std::vector<std::string> list = split(serverList, '\n');
     for (std::string elem : list) {
         QString str = QString::fromStdString(elem);
@@ -127,3 +127,26 @@ void MainWindow::on_refreshButton_clicked()
 
 //    //MircophoneDialog c(this);
 //}
+
+// client side item selection
+void MainWindow::on_listWidget_2_itemClicked(QListWidgetItem *item)
+{
+    QString txt = item->text();
+    //setFilename(txt);
+}
+
+// server side item selection
+void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
+{
+    std::string txt = item->text().toUtf8().constData();
+    std::vector<std::string> vec = split(txt, ',');
+    setFilename(vec[0]);
+}
+
+void MainWindow::on_downloadButton_clicked()
+{
+    QList<QListWidgetItem> *selected = ui->listWidget_serverFiles->selectedItems();
+    std::string songToDownload = selected[0]->
+    qDebug() << songToDownload.c_str();
+    ui->listWidget_serverFiles->;
+}
