@@ -20,7 +20,7 @@ public:
 
     bool isPlaying();
     void setPlaying(bool val);
-    int _playingState;
+    int _playingState = -1;
 
 private slots:
 

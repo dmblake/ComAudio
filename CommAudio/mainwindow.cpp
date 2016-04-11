@@ -101,8 +101,21 @@ void MainWindow::on_close_clicked()
 
 void MainWindow::on_playButton_server_clicked()
 {
-    startServerMulticastSession();
-    playback();
+    switch (_playingState) {
+    case BASS_ACTIVE_PLAYING:
+        break;
+    case BASS_ACTIVE_STOPPED:
+        _playingState = BASS_ACTIVE_PLAYING;
+        playback();
+        break;
+    case BASS_ACTIVE_PAUSED:
+        _playingState = BASS_ACTIVE_PLAYING;
+        break;
+    case -1: // first time only
+        startServerMulticastSession();
+        _playingState = BASS_ACTIVE_PLAYING;
+        playback();
+    }
 }
 
 void MainWindow::on_playButton_client_clicked()
@@ -175,5 +188,6 @@ void MainWindow::setPlaying(bool val) {
 
 void MainWindow::on_pauseButton_server_clicked()
 {
-    changePlayback(BASS_ACTIVE_PAUSED);
+    if (_playingState == BASS_ACTIVE_PLAYING)
+        changePlayback(BASS_ACTIVE_PAUSED);
 }

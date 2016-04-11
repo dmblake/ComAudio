@@ -76,6 +76,17 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
                 qDebug() << "Failed to play" << BASS_ErrorGetCode();
             }
         }
+        // check for pausing
+        switch (mw->_playingState) {
+        case BASS_ACTIVE_PAUSED:
+            // pause stream
+            BASS_ChannelPause(str);
+            // handle stopping while paused, otherwise just wait
+            while (mw->_playingState == BASS_ACTIVE_PAUSED) {
+            }
+            BASS_ChannelPlay(str, FALSE);
+            break;
+        }
         if (pb->getDataAvailable() > 20000) {
             switch (BASS_ChannelIsActive(str)) {
             case BASS_ACTIVE_PAUSED:
@@ -460,7 +471,7 @@ void changePlayback(DWORD state) {
         playbackBuffer->clear();
         break;
     case BASS_ACTIVE_PAUSED:
-        mw->setPlaying(false);
+       // mw->setPlaying(false);
         mw->_playingState = state;
         break;
     }
