@@ -12,6 +12,7 @@ struct sockaddr_in peerAddr;
 struct sockaddr_in clientMcastAddr;
 HANDLE hMulticastThread;
 HANDLE hPlaybackThread;
+HANDLE hFileReadThread;
 McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
@@ -19,10 +20,10 @@ extern struct sockaddr_in myAddr;
 MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
-bool playing = false;
 
-void startClient()
+void startClient(MainWindow* window)
 {
+    mw = window;
     playbackBuffer = new Playback(MAX_BUF);
     networkBuffer = new CircularBuffer(MAX_BUF);
 
@@ -42,10 +43,18 @@ void startClient()
 // temp function
 void playback()
 {
-    playing = true;
+    mw->setPlaying(true);
+    if (hPlaybackThread != INVALID_HANDLE_VALUE) {
+        CloseHandle(hPlaybackThread);
+        hPlaybackThread = INVALID_HANDLE_VALUE;
+    }
+    if (hFileReadThread != INVALID_HANDLE_VALUE) {
+        CloseHandle(hPlaybackThread);
+        hFileReadThread = INVALID_HANDLE_VALUE;
+    }
    // hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, playbackBuffer, 0, NULL);
-    CreateThread(NULL,0, PlaybackFileProc, playbackBuffer, 0, NULL);
-    CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
+    hPlaybackThread = CreateThread(NULL,0, PlaybackFileProc, playbackBuffer, 0, NULL);
+    hFileReadThread = CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
 
 }
 
@@ -56,7 +65,7 @@ void setFilename(std::string str) {
 DWORD WINAPI PlaybackFileProc(LPVOID param) {
     HSTREAM str = 0;
     Playback* pb = (Playback*)param;
-    while (playing) {
+    while (mw->isPlaying()) {
         if (str == 0) {
             if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
                 qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
@@ -68,7 +77,6 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
             }
         }
         if (pb->getDataAvailable() > 20000) {
-            int act = BASS_ChannelIsActive(str);
             switch (BASS_ChannelIsActive(str)) {
             case BASS_ACTIVE_PAUSED:
                 break;
@@ -92,6 +100,15 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
             }
         }
     }
+    switch (mw->_playingState) {
+    case BASS_ACTIVE_STOPPED:
+        BASS_ChannelStop(str);
+        break;
+    case BASS_ACTIVE_PAUSED:
+        BASS_ChannelPause(str);
+        break;
+    }
+
     return 0;
 }
 
@@ -106,7 +123,7 @@ DWORD WINAPI PlaybackThreadProc(LPVOID lpParameter) {
 
 
     // main playback loop
-    while (playing) {
+    while (mw->isPlaying()) {
         // if there is space in the playback buffer and data in the network buffer
         netdata = networkBuffer->getDataAvailable();
         playspace = pb->getSpaceAvailable();
@@ -170,7 +187,7 @@ void startClientMulticastSession()
 {
     qDebug() << "startClientMulticastSession called";
     WSAEVENT ThreadEvent;
-    startClient();
+    //startClient();
 
     if (!setupClientMulticastSocket())
     {
@@ -433,4 +450,18 @@ void clientCleanup()
     //closesocket(UdpSocket);
     //closesocket(cMcastStruct.Sock);
     WSACleanup();
+}
+
+void changePlayback(DWORD state) {
+    switch (state) {
+    case BASS_ACTIVE_STOPPED:
+        mw->setPlaying(false);
+        mw->_playingState = state;
+        playbackBuffer->clear();
+        break;
+    case BASS_ACTIVE_PAUSED:
+        mw->setPlaying(false);
+        mw->_playingState = state;
+        break;
+    }
 }

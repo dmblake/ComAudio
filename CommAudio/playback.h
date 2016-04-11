@@ -15,11 +15,6 @@ public:
     DWORD playFromFile(const char * filename);
     static DWORD startThread(LPVOID instance);
     bool setFilename(const char * fn);
-    /*
-    int write(const char * buf, int len);
-    int read(char * buf, int len);
-    int getAvailable();
-    */
 private:
  //   CircularBuffer* _cb;
     BASS_FILEPROCS fp;

@@ -18,6 +18,9 @@ public:
     DWORD getSize();
     int getSpaceAvailable();
     int getDataAvailable();
+    int clear();
+protected:
+    bool _reset = false;
 private:
     char * _data;
     int _writeBytesAvailable;

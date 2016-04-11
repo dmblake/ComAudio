@@ -63,8 +63,9 @@ DWORD Playback::playFromFile(const char * filename) {
         CloseHandle(hFile);
         return 0;
     }
+    SetFilePointer(hFile, 0, 0, FILE_BEGIN);
     // while space in buffer
-    while (ReadFile(hFile, buf, BUF_LEN, &bytesRead, 0)) {
+    while (!_reset && ReadFile(hFile, buf, BUF_LEN, &bytesRead, 0)) {
         if (bytesRead == 0) {
             CloseHandle(hFile);
             return 0;
@@ -76,6 +77,7 @@ DWORD Playback::playFromFile(const char * filename) {
         }
         this->write(buf, bytesRead);
     }
+    _reset = false;
     CloseHandle(hFile);
     return 0;
 }

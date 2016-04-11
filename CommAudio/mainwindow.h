@@ -18,6 +18,10 @@ public:
     ~MainWindow();
     void printToListView(std::string msg);
 
+    bool isPlaying();
+    void setPlaying(bool val);
+    int _playingState;
+
 private slots:
 
     void on_updateButton_clicked();
@@ -34,11 +38,17 @@ private slots:
 
     void on_downloadButton_clicked();
 
+    void on_stopButton_server_clicked();
+
+
+    void on_pauseButton_server_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;
     bool _client;
     QString _ipaddr;
+    bool _playing = true;
 
 };
 

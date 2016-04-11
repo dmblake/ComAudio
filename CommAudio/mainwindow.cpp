@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QTextStream>
 
+
 bool isServer;
 // hank revision
 MainWindow::MainWindow(QWidget *parent) :
@@ -47,14 +48,14 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     if(_server == true){
         ui->tabWidget->setTabEnabled(1,false);
         startServer();
-        startClient();
+        startClient(this);
         isServer = true;
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
-        startClient();
+        startClient(this);
     }
 
     qDebug() << server;
@@ -149,8 +150,30 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 
 void MainWindow::on_downloadButton_clicked()
 {
+    /*
     QList<QListWidgetItem> *selected = ui->listWidget_serverFiles->selectedItems();
     std::string songToDownload = selected[0]->
     qDebug() << songToDownload.c_str();
     ui->listWidget_serverFiles->;
+    */
+}
+
+void MainWindow::on_stopButton_server_clicked()
+{
+    changePlayback(BASS_ACTIVE_STOPPED);
+}
+
+// allow playback
+bool MainWindow::isPlaying() {
+    return _playing;
+}
+
+// change playback status
+void MainWindow::setPlaying(bool val) {
+    _playing = val;
+}
+
+void MainWindow::on_pauseButton_server_clicked()
+{
+    changePlayback(BASS_ACTIVE_PAUSED);
 }
