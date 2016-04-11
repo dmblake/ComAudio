@@ -6,7 +6,7 @@
 #include "network.h"
 #include "playback.h"
 #include "bass.h"
-void startFileTransfer();
+std::vector<std::string> updateServerFiles();
 bool setupTcpSocket(QString ipaddr);
 bool setUdpSocket();
 bool setupClientMulticastSocket();

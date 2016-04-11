@@ -78,7 +78,16 @@ void MainWindow::printToListView(std::string msg)
 
 void MainWindow::on_updateButton_clicked()
 {
-    startFileTransfer();
+   std::vector<std::string> filesReceived = updateServerFiles();
+   ui->listWidget_serverFiles->clear();
+   for(auto elem : filesReceived) {
+       // each vector will have 2 elements - the file name, and the size
+       std::vector<std::string> singleFnameAndSize = split(elem, ',');
+       ui->listWidget_serverFiles->addItem(QString::fromStdString(singleFnameAndSize[0]));
+       // access singleFnameAndSize[0] to get the filename
+       // access singleFnameAndSize[1] to get the size in string form
+       // update your listwidget thingy here
+    }
 }
 
 void MainWindow::on_close_clicked()
@@ -100,6 +109,7 @@ void MainWindow::on_playButton_client_clicked()
 // hank revis
 void MainWindow::on_refreshButton_clicked()
 {
+    ui->listWidget->clear();
     std::string extension = ".mp3";
     std::string serverList = listAllFiles(extension);
     std::vector<std::string> list = split(serverList, '\n');
