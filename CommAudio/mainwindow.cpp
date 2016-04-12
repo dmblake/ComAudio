@@ -132,7 +132,8 @@ void MainWindow::start_playing() {
         _bm.startReadThread((LPVOID)&_bm);
         _bm.startPlayThread((LPVOID)NULL);
     } else {
-        // do nothing
+        // check for pause and resume
+        _bm.resume();
     }
 }
 
@@ -202,6 +203,7 @@ void MainWindow::on_downloadButton_clicked()
 void MainWindow::on_stopButton_server_clicked()
 {
     changePlayback(BASS_ACTIVE_STOPPED);
+    _bm.stop();
 }
 
 // allow playback
@@ -218,5 +220,6 @@ void MainWindow::on_pauseButton_server_clicked()
 {
     if (_playingState == BASS_ACTIVE_PLAYING)
         changePlayback(BASS_ACTIVE_PAUSED);
+    _bm.pause();
 
 }

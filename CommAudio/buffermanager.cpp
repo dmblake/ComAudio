@@ -2,10 +2,8 @@
 
 void CALLBACK fileClose(void *user)
 {
-    /*
-    ((BufferManager*)user)->_isPlaying = false;
-    ((BufferManager*)user)->_pb->clear();
-    */
+    //((BufferManager*)user)->_isPlaying = false;
+    //((BufferManager*)user)->_pb->clear();
 }
 
 QWORD CALLBACK fileOpen(void *user)
@@ -51,13 +49,20 @@ BufferManager::BufferManager(int len, bool server) :
 DWORD BufferManager::loadFromFile(LPVOID param) {
     HANDLE hFile;
     wchar_t * wideStr;
-    BufferManager* bm = (BufferManager*)param;
-    int space = bm->_pb->getSpaceAvailable();
-    char buf[BUF_LEN];
     DWORD bytesRead = 0;
-    size_t lenC = mbsrtowcs(NULL, (const char **)&bm->_filename, 0, NULL);
+    BufferManager* bm = (BufferManager*)param;
+    char buf[BUF_LEN];
+    int space = bm->_pb->getSpaceAvailable();
+    // convert char * filename to wide string
+    std::string temp(bm->_filename);
+    char * ctemp = new char[temp.length()+1];
+    strcpy(ctemp, temp.c_str());
+    size_t lenC = mbsrtowcs(NULL, (const char **)&ctemp, 0, NULL);
     wchar_t * wideFile = new wchar_t[lenC+1]();
-    lenC = mbsrtowcs(wideFile, (const char **)&bm->_filename, lenC+1, NULL);
+    lenC = mbsrtowcs(wideFile, (const char **)&ctemp, lenC+1, NULL);
+    // finish converting
+    // set EOF to false
+    bm->_eof = false;
     // open file
     hFile = CreateFile
             (wideFile,               // file to open
@@ -76,8 +81,11 @@ DWORD BufferManager::loadFromFile(LPVOID param) {
     SetFilePointer(hFile, 0, 0, FILE_BEGIN);
     // while space in buffer
     while (bm->_isPlaying && ReadFile(hFile, buf, BUF_LEN, &bytesRead, 0)) {
+        // finished reading file
         if (bytesRead == 0) {
             CloseHandle(hFile);
+            bm->_eof = true;
+            qDebug() << "Exiting read thread: bytesRead = 0";
             return 0;
         }
         // wait for space
@@ -88,27 +96,28 @@ DWORD BufferManager::loadFromFile(LPVOID param) {
         bm->_pb->write(buf, bytesRead);
     }
     CloseHandle(hFile);
+    qDebug() << "Exiting read thread";
     return 0;
 }
 
 DWORD BufferManager::play(LPVOID param) {
-    HSTREAM str = 0;
     BufferManager * bm = (BufferManager*)param;
     while (bm->_isPlaying) {
         // start stream
-        if (str == 0) {
+        if (bm->_str == 0) {
 
-            if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
+            if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
                 qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
             }
-            if (!BASS_ChannelPlay(str, FALSE)) {
+            if (!BASS_ChannelPlay(bm->_str, FALSE)) {
                 qDebug() << "Failed to play" << BASS_ErrorGetCode();
             }
         }
         // if data is in the buffer, start any stopped stream
-        if (bm->_pb->getDataAvailable() > 20000) {
-            switch (BASS_ChannelIsActive(str)) {
+        if (bm->_isPlaying && (bm->_pb->getDataAvailable() > 20000 )) {
+            switch (BASS_ChannelIsActive(bm->_str)) {
             case BASS_ACTIVE_PAUSED:
+                BASS_ChannelPause(bm->_str);
                 break;
             case BASS_ACTIVE_PLAYING:
                 break;
@@ -116,19 +125,39 @@ DWORD BufferManager::play(LPVOID param) {
                 break;
             case BASS_ACTIVE_STOPPED:
                 // play
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
+                if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
                     qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
                 }
-                if (!BASS_ChannelPlay(str, FALSE)) {
+                if (!BASS_ChannelPlay(bm->_str, FALSE)) {
                     qDebug() << "Failed to play" << BASS_ErrorGetCode();
                 }
                 break;
             case -1:
                 qDebug() << "Error in BASS status";
-
+            }
+        }
+        // if we've hit EOF, see if we can play anything else, then exit
+        if (bm->_eof) {
+            if (BASS_ChannelIsActive(bm->_str) == BASS_ACTIVE_STOPPED) {
+                if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
+                }
+                if (!BASS_ChannelPlay(bm->_str, FALSE)) {
+                    bm->_isPlaying = false;
+                } else {
+                    do {
+                        // do nothing until we're not playing
+                    } while (BASS_ChannelIsActive(bm->_str) == BASS_ACTIVE_PLAYING);
+                        // then stop
+                        bm->_isPlaying = false;
+                }
             }
         }
     }
+    // clean up while exiting
+    if (BASS_ChannelIsActive(bm->_str) == BASS_ACTIVE_PLAYING) {
+        BASS_ChannelStop(bm->_str);
+    }
+    qDebug() << "Exiting play thread";
     return 0;
 }
 
@@ -166,5 +195,34 @@ bool BufferManager::setFilename(const char * fn) {
     return false;
 }
 
+void BufferManager::stop() {
+    switch(BASS_ChannelIsActive(_str)) {
+    case BASS_ACTIVE_STOPPED:
+        // fall down
+    case BASS_ACTIVE_PAUSED:
+        // fall down
+    case BASS_ACTIVE_PLAYING:
+        BASS_ChannelStop(_str);
+        _isPlaying = false;
+        _str = 0;
+        _pb->clear();
+        break;
+    }
+}
 
+void BufferManager::pause() {
+    switch (BASS_ChannelIsActive(_str)) {
+    case BASS_ACTIVE_PAUSED:
+        // fall through
+    case BASS_ACTIVE_PLAYING:
+        BASS_ChannelPause(_str);
+        break;
+    }
+}
+
+void BufferManager::resume() {
+    if (BASS_ChannelIsActive(_str)== BASS_ACTIVE_PAUSED) {
+        BASS_ChannelPlay(_str, false);
+    }
+}
 

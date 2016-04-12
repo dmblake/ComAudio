@@ -12,6 +12,9 @@ public:
     BufferManager(int len, bool server);
     static DWORD play(LPVOID param);
     DWORD startPlayThread(LPVOID param);
+    void stop();
+    void pause();
+    void resume();
     CircularBuffer * _pb;
     CircularBuffer * _net;
     bool _isServer;
@@ -23,6 +26,8 @@ public:
 private:
     char * _filename;
     BASS_FILEPROCS _fp;
+    HSTREAM _str;
+    bool _eof = false;
 
 };
 

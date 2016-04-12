@@ -90,7 +90,6 @@ int CircularBuffer::clear() {
     memset(_data, 0, _size);
     _writePtr = _readPtr = 0;
     _writeBytesAvailable = _size;
-    _reset = true;
     return _writeBytesAvailable;
 }
 
