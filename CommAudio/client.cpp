@@ -354,6 +354,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     WSAEVENT EventArray[1];
     LPSOCKET_INFORMATION SocketInfo;
     int addrSize = sizeof(sockaddr_in);
+    BufferManager* bufman = bm;
 
     if ((SocketInfo = (LPSOCKET_INFORMATION)GlobalAlloc(GPTR, sizeof(SOCKET_INFORMATION))) == NULL)
     {
@@ -391,13 +392,13 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
 
     while (TRUE)
     {
-        qDebug() << "wait for multiple event";
+        //qDebug() << "wait for multiple event";
         Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, WSA_INFINITE, TRUE);
         if (Index == WAIT_IO_COMPLETION)
         {
             // An overlapped request completion routine
             // just completed. Continue servicing more completion routines.
-            qDebug() << "index = wait io completion";
+            //qDebug() << "index = wait io completion";
             continue;
         }
         else
