@@ -227,3 +227,8 @@ void MainWindow::on_pauseButton_server_clicked()
     _bm.pause();
 
 }
+
+void MainWindow::on_stopButton_client_clicked()
+{
+    _bm.stop();
+}

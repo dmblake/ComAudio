@@ -48,6 +48,8 @@ private slots:
 
 
 
+    void on_stopButton_client_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;
