@@ -7,28 +7,37 @@ void getFileFromServer(SOCKET sd, const char* fname, int size) {
     rcvFile(sd, fname, size);
 }
 
-void sendMessage(SOCKET sd, const char* msg) {
-	send(sd, msg, BUF_LEN, 0);
+int sendMessage(SOCKET sd, const char* msg) {
+    int err = send(sd, msg, BUF_LEN, 0);
+    return err;
 }
 
 std::string getListFromServer(SOCKET sd) {
-    sendMessage(sd, "updatelist{");
-    return rcvControlMessage(sd);
+    if (sendMessage(sd, "updatelist{") != -1) {
+        return rcvControlMessage(sd);
+    } else {
+        return "";
+    }
 }
 
 void handleControlMessages(SOCKET sd) {
+    qDebug() << "handle control messages";
     while(true) {
         std::string msg = rcvControlMessage(sd);
+        qDebug() << msg.c_str();
         std::vector<std::string> splitmsg = split(msg, '{');
 
         if (splitmsg[0] == "updatelist") {
+            qDebug() << "updatelist";
             std::string list = listAllFiles(".wav");
             list += listAllFiles(".mp3");
             sendMessage(sd, list.c_str());
         } else if (splitmsg[0] == "file") {
+            qDebug() << "file";
             sendFile(sd, splitmsg[1].c_str());
-        } else {
 
+        } else {
+            qDebug() << "no match";
         }
     }
 }
@@ -49,7 +58,7 @@ std::string rcvControlMessage(SOCKET sd) {
 		if (n == 0)
 			break;
 	}
-
+    qDebug() << rbuf;
 	std::string msg = std::string(rbuf);
 	return msg;
 }

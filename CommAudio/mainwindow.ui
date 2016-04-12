@@ -285,16 +285,6 @@ color: rgb(255, 255, 255);</string>
        </rect>
       </property>
      </widget>
-     <zorder>microphoneButton_server</zorder>
-     <zorder>stopButton_server</zorder>
-     <zorder>pauseButton_server</zorder>
-     <zorder>playButton_server</zorder>
-     <zorder>listWidget</zorder>
-     <zorder>refreshButton</zorder>
-     <zorder>listWidget</zorder>
-     <zorder>refreshButton</zorder>
-     <zorder>downloadTitle_2</zorder>
-     <zorder>listWidget_debug_server</zorder>
     </widget>
     <widget class="QWidget" name="client_tab">
      <attribute name="title">
@@ -394,7 +384,7 @@ color: rgb(255, 255, 255);</string>
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidget_2">
+     <widget class="QListWidget" name="playlistWidget">
       <property name="geometry">
        <rect>
         <x>640</x>
@@ -577,8 +567,8 @@ color: rgb(255, 255, 255);</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="images.qrc"/>
   <include location="qdarkstyle/style.qrc"/>
+  <include location="images.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -31,7 +31,11 @@ void startClient()
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
         mw->printToListView("Failed to init BASS");
     }
-
+/*
+    if (playbackBuffer->setFilename("C:\\Users\\Think_Admin\\Desktop\\whistle.wav")) {
+        CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
+    }
+    */
 }
 
 // handles when you press the play button
@@ -39,46 +43,31 @@ void startClient()
 void playback()
 {
     playing = true;
-    hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, NULL, 0, NULL);
+   // hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, playbackBuffer, 0, NULL);
+    CreateThread(NULL,0, PlaybackFileProc, playbackBuffer, 0, NULL);
+    CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
 
 }
 
-DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
+void setFilename(std::string str) {
+    playbackBuffer->setFilename(str.c_str());
+}
+
+DWORD WINAPI PlaybackFileProc(LPVOID param) {
     HSTREAM str = 0;
-    char tmp[BUF_LEN];
-    int datalen= 0;
-    int netdata = 0;
-    int playspace = 0;
-    Playback *pb = playbackBuffer;
-    memset(tmp, 0, BUF_LEN);
-
-
-    // main playback loop
+    Playback* pb = (Playback*)param;
     while (playing) {
-        // if there is space in the playback buffer and data in the network buffer
-        netdata = networkBuffer->getDataAvailable();
-        playspace = playbackBuffer->getSpaceAvailable();
-        if (playspace > 0 && netdata > 0) {
-            // set amount of data to copy
-            datalen = (netdata > BUF_LEN) ? BUF_LEN : netdata;
-            networkBuffer->read(tmp, datalen);
-            playbackBuffer->write(tmp, datalen);
-            // if stream is not created, do so now
-            // the check on data available is to ensure the entire header has been read in
-            if (str == 0 && playbackBuffer->getDataAvailable() > 20000) {
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
-                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-                    mw->printToListView("Failed to create stream");
-                }
+        if (str == 0) {
+            if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
+                qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+            }
 
-                // auto start, move this away!
-                if (!BASS_ChannelPlay(str, FALSE)) {
-                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
-                    mw->printToListView(("Failed to play stream"));
-                }
-            } // end init stream
-        } // end adding to data
-        if (playbackBuffer->getDataAvailable() > 20000) {
+            // auto start, move this away!
+            if (!BASS_ChannelPlay(str, FALSE)) {
+                qDebug() << "Failed to play" << BASS_ErrorGetCode();
+            }
+        }
+        if (pb->getDataAvailable() > 20000) {
             int act = BASS_ChannelIsActive(str);
             switch (BASS_ChannelIsActive(str)) {
             case BASS_ACTIVE_PAUSED:
@@ -89,14 +78,12 @@ DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
                 break;
             case BASS_ACTIVE_STOPPED:
                 // play
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, playbackBuffer->getFP(), playbackBuffer))) {
+                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
                     qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-                    mw->printToListView("Failed to create stream");
                 }
                 // auto start, move this away!
                 if (!BASS_ChannelPlay(str, FALSE)) {
                     qDebug() << "Failed to play" << BASS_ErrorGetCode();
-                    mw->printToListView(("Failed to play stream"));
                 }
                 break;
             case -1:
@@ -104,36 +91,79 @@ DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater) {
 
             }
         }
+    }
+    return 0;
+}
 
-        /*else if (BASS_ChannelIsActive(str) == BASS_ACTIVE_PLAYING && playbackBuffer->getDataAvailable() < 20000){
-            // stop
-            if (!BASS_ChannelPause(str)) {
-                qDebug() << "Failed to stop" << BASS_ErrorGetCode();
-             }
+DWORD WINAPI PlaybackThreadProc(LPVOID lpParameter) {
+    HSTREAM str = 0;
+    char tmp[BUF_LEN];
+    int datalen= 0;
+    int netdata = 0;
+    int playspace = 0;
+    Playback *pb = (Playback*)lpParameter;
+    memset(tmp, 0, BUF_LEN);
+
+
+    // main playback loop
+    while (playing) {
+        // if there is space in the playback buffer and data in the network buffer
+        netdata = networkBuffer->getDataAvailable();
+        playspace = pb->getSpaceAvailable();
+        if (playspace > 0 && netdata > 0) {
+            // set amount of data to copy
+            datalen = (netdata > BUF_LEN) ? BUF_LEN : netdata;
+            networkBuffer->read(tmp, datalen);
+            pb->write(tmp, datalen);
+            // if stream is not created, do so now
+            // the check on data available is to ensure the entire header has been read in
+            if (str == 0 && playbackBuffer->getDataAvailable() > 20000) {
+                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
+                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+                }
+
+                // auto start, move this away!
+                if (!BASS_ChannelPlay(str, FALSE)) {
+                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                }
+            } // end init stream
+        } // end adding to data
+        if (pb->getDataAvailable() > 20000) {
+            int act = BASS_ChannelIsActive(str);
+            switch (BASS_ChannelIsActive(str)) {
+            case BASS_ACTIVE_PAUSED:
+                break;
+            case BASS_ACTIVE_PLAYING:
+                break;
+            case BASS_ACTIVE_STALLED:
+                break;
+            case BASS_ACTIVE_STOPPED:
+                // play
+                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
+                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+                }
+                // auto start, move this away!
+                if (!BASS_ChannelPlay(str, FALSE)) {
+                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                }
+                break;
+            case -1:
+                qDebug() << "Error in BASS status";
+
+            }
         }
-        */
     } // end while loop
     return 1;
 } // end thread proc
 
 // hank
-void startFileTransfer()
+std::vector<std::string> updateServerFiles()
 {
     std::string str = getListFromServer(TcpSocket);
 
     std::vector<std::string> filesAndSizes = split(str, '\n');
 
-    for (auto elem : filesAndSizes) {
-        // each vector will have 2 elements - the file name, and the size
-        std::vector<std::string> singleFnameAndSize = split(elem, ',');
-
-        // access singleFnameAndSize[0] to get the filename
-        // access singleFnameAndSize[1] to get the size in string form
-        // update your listwidget thingy here
-    }
-
-    QString qstr = QString::fromStdString(str);
-    qDebug() << qstr;
+    return filesAndSizes;
 }
 
 void startClientMulticastSession()
@@ -304,9 +334,6 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     SocketInfo->DataBuf.len = BUF_LEN;
     SocketInfo->DataBuf.buf = SocketInfo->Buffer;
 
-    mw->printToListView("TEstiNG");
-
-
     if (WSARecvFrom(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes, &Flags, (SOCKADDR*)&(cMcastStruct.mcastAddr),
             &addrSize, &(SocketInfo->Overlapped), ClientMcastWorkerRoutine) == SOCKET_ERROR)
     {
@@ -406,4 +433,8 @@ void clientCleanup()
     //closesocket(UdpSocket);
     //closesocket(cMcastStruct.Sock);
     WSACleanup();
+}
+
+void downloadFile(const char* filename){
+    getFileFromServer(TcpSocket, filename, 357420);
 }
