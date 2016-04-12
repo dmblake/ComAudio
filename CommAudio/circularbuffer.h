@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <QDebug>
-#include "bass.h"
-#define BUF_LEN 1024
+#include "shared.h"
 
 class CircularBuffer
 {

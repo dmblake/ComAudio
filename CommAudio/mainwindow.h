@@ -22,6 +22,8 @@ public:
     bool isPlaying();
     void setPlaying(bool val);
     int _playingState = -1;
+    BufferManager _bm;
+
 
 private slots:
 
@@ -44,13 +46,17 @@ private slots:
 
     void on_pauseButton_server_clicked();
 
+
+
 private:
     Ui::MainWindow *ui;
     bool _server;
     bool _client;
     QString _ipaddr;
     bool _playing = true;
-    BufferManager _bm;
+
+    // helper funcitons
+    void MainWindow::start_playing();
 
 };
 

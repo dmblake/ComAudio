@@ -12,7 +12,7 @@ bool isServer;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    _bm(BUF_LEN)
+    _bm(MAX_BUF, false)
 {
 
 
@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),_client(client),_ipaddr(ipaddr),
     ui(new Ui::MainWindow),
-    _bm(BUF_LEN)
+    _bm(MAX_BUF, server)
 {
 
     QFile f(":qdarkstyle/style.qss");
@@ -104,6 +104,10 @@ void MainWindow::on_close_clicked()
 
 void MainWindow::on_playButton_server_clicked()
 {
+    start_playing();
+    // perform any other server related actions
+
+    /*  PRESERVED FOR REFERENCE : CHANGING STATE OF MAINWINDOW IS DEPRECATED : USE BUFFERMANAGER _BM
     switch (_playingState) {
     case BASS_ACTIVE_PLAYING:
         break;
@@ -119,12 +123,25 @@ void MainWindow::on_playButton_server_clicked()
         _playingState = BASS_ACTIVE_PLAYING;
         playback();
     }
+    */
+}
+
+void MainWindow::start_playing() {
+    if (!_bm._isPlaying) {
+        _bm._isPlaying = true;
+        _bm.startReadThread((LPVOID)&_bm);
+        _bm.startPlayThread((LPVOID)NULL);
+    } else {
+        // do nothing
+    }
 }
 
 void MainWindow::on_playButton_client_clicked()
 {
+
+    // LOGIC FOR LOCAL PLAYBACK VS RADIO HERE
     startClientMulticastSession();
-    playback();
+    start_playing();
 }
 
 // hank revis
@@ -152,8 +169,8 @@ void MainWindow::on_refreshButton_clicked()
 // client side item selection
 void MainWindow::on_listWidget_2_itemClicked(QListWidgetItem *item)
 {
-    QString txt = item->text();
-    //setFilename(txt);
+    // reuse functionality from server side
+    on_listWidget_itemClicked(item);
 }
 
 // server side item selection
@@ -161,7 +178,7 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
 {
     std::string txt = item->text().toUtf8().constData();
     std::vector<std::string> vec = split(txt, ',');
-    setFilename(vec[0]);
+    _bm.setFilename(vec[0].c_str());
 }
 
 void MainWindow::on_downloadButton_clicked()

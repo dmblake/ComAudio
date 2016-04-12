@@ -3,8 +3,9 @@
 
 #include <winsock2.h>
 #include <WS2tcpip.h>
-#include <windows.h>
+//#include <windows.h>
 #include <QDebug>
+#include "bass.h"
 
 #define PORT            9999
 #define MCAST_PORT      9001
