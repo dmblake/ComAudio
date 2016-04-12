@@ -17,7 +17,6 @@ McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
-SOCKET ClientListenSocket;
 MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
@@ -31,7 +30,7 @@ void startClient()
     // For mic conversations
     if (!setupClientListenSocket())
     {
-        qDebug() << "Failed to set up client listen socket";
+        qDebug() << "Failed to set upf client listen socket";
     }
 
     if (!BASS_Init(-1, 44100, 0, 0, 0)) {
@@ -78,23 +77,6 @@ bool setupClientListenSocket()
     }*/
 
     return true;
-}
-
-DWORD WINAPI ClientAcceptSocketThread(LPVOID param)
-{
-    qDebug() << "inside accept socket thread";
-    SOCKET AcceptSocket;
-    while(TRUE)
-    {
-        createAcceptSocket(&ClientListenSocket, &AcceptSocket);
-        if (CreateThread(NULL, 0, MicrophoneSessionThread, (void*)AcceptSocket, 0, NULL) == NULL)
-        {
-            qDebug() << "File transfer (Accept) Socket could not be created";
-        }
-
-        //close accept socket after passing a copy to the thread
-        //closesocket(AcceptSocket);
-    }
 }
 
 DWORD WINAPI MicrophoneSessionThread(LPVOID lpParameter)
@@ -489,41 +471,6 @@ void processIO(char* data, DWORD len)
     if (networkBuffer->getSpaceAvailable() > len) {
         networkBuffer->write(data, len);
     }
-}
-
-bool setupClientListenSocket()
-{
-    qDebug()<< "setupClientListenSocket called";
-    createTcpSocket(&ClientListenSocket);
-
-    // set reuseaddr
-    setsockopt(ClientListenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&tFlag, sizeof(BOOL));
-
-    // Change the port in the myAddr struct to the default port
-    myAddr.sin_port = htons(MIC_PORT);
-
-    // Bind the listen socket
-    if (bind(ClientListenSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
-    {
-        qDebug() << "Failed to bind the listen socket";
-        return false;
-    }
-
-    // Setup the ListenSocket to listen for incoming connections
-    // with a backlog size 5
-    if (listen(ClientListenSocket, 5))
-    {
-        qDebug() << "listen() failed";
-        return false;
-    }
-
-    /*
-    if (CreateThread(NULL, 0, AcceptSocketThread, NULL, 0, NULL) == NULL)
-    {
-        qDebug() << "AcceptSocket Thread could not be created";
-    }*/
-
-    return true;
 }
 
 /* */
