@@ -117,8 +117,7 @@ DWORD WINAPI PlaybackFileProc(LPVOID param) {
         break;
     case BASS_ACTIVE_PLAYING:
         while(pb->isPlaying()) {}
-        mw->setPlaying(false);
-        mw->_playingState = BASS_ACTIVE_STOPPED;
+        changePlayback(BASS_ACTIVE_STOPPED);
         break;
     }
 

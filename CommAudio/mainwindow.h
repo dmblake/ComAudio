@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QListWidget>
+#include "buffermanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +50,7 @@ private:
     bool _client;
     QString _ipaddr;
     bool _playing = true;
+    BufferManager _bm;
 
 };
 

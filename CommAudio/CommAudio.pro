@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     playback.cpp \
     circularbuffer.cpp \
     FileUtil.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    buffermanager.cpp
 
 HEADERS  += mainwindow.h \
     server.h \
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h \
     bass.h \
     dirent.h \
     FileUtil.h \
-    settingsDialog.h
+    settingsDialog.h \
+    buffermanager.h
 
 
 LIBS += -LC:\dicom\lib -lws2_32 -lwsock32 -L"$$PWD\lib" -lbass

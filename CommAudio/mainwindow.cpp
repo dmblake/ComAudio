@@ -11,7 +11,8 @@ bool isServer;
 // hank revision
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    _bm(BUF_LEN)
 {
 
 
@@ -23,7 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),_client(client),_ipaddr(ipaddr),
-    ui(new Ui::MainWindow){
+    ui(new Ui::MainWindow),
+    _bm(BUF_LEN)
+{
 
     QFile f(":qdarkstyle/style.qss");
     if (!f.exists())
