@@ -17,6 +17,8 @@ McastStruct cMcastStruct;
 extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 
+BufferManager* bm;
+
 MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
@@ -195,10 +197,11 @@ std::vector<std::string> updateServerFiles()
     return filesAndSizes;
 }
 
-void startClientMulticastSession()
+void startClientMulticastSession(BufferManager* bufman)
 {
     qDebug() << "startClientMulticastSession called";
     WSAEVENT ThreadEvent;
+    bm = bufman;
     //startClient();
 
     if (!setupClientMulticastSocket())
@@ -450,8 +453,8 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 void processIO(char* data, DWORD len)
 {
     //qDebug() << data;
-    if (networkBuffer->getSpaceAvailable() > len) {
-        networkBuffer->write(data, len);
+    if (bm->_pb->getSpaceAvailable() > len) {
+        bm->_pb->write(data, len);
     }
 }
 

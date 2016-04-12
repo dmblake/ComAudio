@@ -6,13 +6,14 @@
 #include "network.h"
 #include "playback.h"
 #include "bass.h"
+#include "buffermanager.h"
 void downloadFile(const char* filename);
 std::vector<std::string> updateServerFiles();
 bool setupTcpSocket(QString ipaddr);
 bool setUdpSocket();
 bool setupClientMulticastSocket();
 void clientCleanup();
-void startClientMulticastSession();
+void startClientMulticastSession(BufferManager* bm);
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags);
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter);
 void processIO(char* data, DWORD len);

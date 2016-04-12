@@ -141,7 +141,7 @@ void MainWindow::on_playButton_client_clicked()
 {
 
     // LOGIC FOR LOCAL PLAYBACK VS RADIO HERE
-    startClientMulticastSession();
+    startClientMulticastSession(&_bm);
     start_playing();
 }
 

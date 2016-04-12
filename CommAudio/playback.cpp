@@ -96,10 +96,12 @@ void Playback::setPlaying(bool val) {
 DWORD Playback::startThread(LPVOID instance) {
     Playback* pb = (Playback*)instance;
     // filename must be set by calling function before this will successfully start a thread
+    /*
     if (pb->filename != 0 && strlen(pb->filename) > 0) {
         qDebug() << "Starting thread";
         return pb->playFromFile(pb->filename);
     }
+    */
     return 0;
 }
 

@@ -175,7 +175,7 @@ DWORD BufferManager::startReadThread(LPVOID instance) {
     BufferManager* bm = (BufferManager*)instance;
     HANDLE hThread = INVALID_HANDLE_VALUE;
     // filename must be set by calling function before this will successfully start a thread
-    if (bm->_filename != 0 && strlen(bm->_filename) > 0) {
+    if (bm->_isServer && bm->_filename != 0 && strlen(bm->_filename) > 0) {
         qDebug() << "Starting read thread";
         hThread = CreateThread(0, 0, BufferManager::loadFromFile, this, 0, 0);
     }
