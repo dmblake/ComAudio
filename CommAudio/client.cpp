@@ -486,5 +486,5 @@ void clientCleanup()
 }
 
 void downloadFile(const char* filename){
-    getFileFromServer(TcpSocket, filename, 9416985);
+    getFileFromServer(TcpSocket, filename, 357420);
 }
