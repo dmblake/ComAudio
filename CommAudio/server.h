@@ -12,7 +12,7 @@ bool setupListenSocket();
 DWORD WINAPI FileTransferThread(LPVOID lpParameter);
 bool setupServerMulticastSocket();
 void serverCleanup();
-void startServerMulticastSession();
+void startServerMulticastSession(BufferManager* bm);
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter);
 DWORD WINAPI AcceptSocketThread(LPVOID lpParameter);
 

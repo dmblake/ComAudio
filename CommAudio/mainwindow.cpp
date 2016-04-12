@@ -131,6 +131,10 @@ void MainWindow::start_playing() {
         _bm._isPlaying = true;
         _bm.startReadThread((LPVOID)&_bm);
         _bm.startPlayThread((LPVOID)NULL);
+        // start server
+        if (_bm._isServer) {
+            startServerMulticastSession(&_bm);
+        }
     } else {
         // check for pause and resume
         _bm.resume();

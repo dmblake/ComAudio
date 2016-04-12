@@ -25,14 +25,14 @@ void startServer()
 }
 
 
-void startServerMulticastSession()
+void startServerMulticastSession(BufferManager* bm)
 {
     if (!setupServerMulticastSocket())
     {
         qDebug() << "failed to setup multicast socket" << WSAGetLastError();
     }
 
-    if (CreateThread(NULL, 0, ServerMcastThread, NULL, 0, NULL) == NULL)
+    if (CreateThread(NULL, 0, ServerMcastThread, bm, 0, NULL) == NULL)
     {
         qDebug() << "ServerMcastThread could not be created";
     }
@@ -105,6 +105,8 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     DWORD nBytesRead;
     HANDLE hFile;
     int nRet;
+    BufferManager* bm = (BufferManager*)lpParameter;
+    /*
     hFile = CreateFile
             (L"C:\\test\\06 Holland, 1945.mp3",               // file to open
             GENERIC_READ,
@@ -122,11 +124,23 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     {
         qDebug() << "hfile ok";
     }
+    */
     char sendBuff[BUF_LEN];
     int ret;
 
-    
+    while(bm->_isPlaying) {
+        nBytesRead = bm->_net->read(sendBuff, BUF_LEN);
+        if (nBytesRead > 0) {
+            nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
+            if (nRet < 0)
+            {
+                qDebug() << "sendto failed" << WSAGetLastError();
+            }
+        }
+    }
 
+    
+/*
     while (ReadFile(hFile, sendBuff, BUF_LEN, &nBytesRead, NULL))
     {
         // Sending Datagrams
@@ -151,7 +165,9 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
             ExitThread(3);
         }
     }
+    */
     qDebug() << "finished sending";
+    ExitThread(3);
 }
 
 /*

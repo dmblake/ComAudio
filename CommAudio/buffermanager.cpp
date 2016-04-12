@@ -215,14 +215,14 @@ void BufferManager::pause() {
     case BASS_ACTIVE_PAUSED:
         // fall through
     case BASS_ACTIVE_PLAYING:
-        BASS_ChannelPause(_str);
+        BASS_Pause();
         break;
     }
 }
 
 void BufferManager::resume() {
     if (BASS_ChannelIsActive(_str)== BASS_ACTIVE_PAUSED) {
-        BASS_ChannelPlay(_str, false);
+        BASS_Start();
     }
 }
 
