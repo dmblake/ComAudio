@@ -50,6 +50,8 @@ private slots:
 
     void on_stopButton_client_clicked();
 
+    void on_muteButtonServer_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool _server;

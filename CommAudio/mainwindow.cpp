@@ -232,3 +232,8 @@ void MainWindow::on_stopButton_client_clicked()
 {
     _bm.stop();
 }
+
+void MainWindow::on_muteButtonServer_clicked()
+{
+    _bm.mute();
+}

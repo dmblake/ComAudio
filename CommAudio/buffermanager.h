@@ -23,6 +23,7 @@ public:
     DWORD BufferManager::startReadThread(LPVOID instance);
     bool BufferManager::setFilename(const char * fn);
     BASS_FILEPROCS* getFP();
+    void mute();
 private:
     char * _filename;
     BASS_FILEPROCS _fp;

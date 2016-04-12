@@ -227,3 +227,12 @@ void BufferManager::resume() {
     }
 }
 
+// mute and unmute
+void BufferManager::mute() {
+    if (BASS_GetVolume() > 0) {
+        BASS_SetVolume(0);
+    } else {
+        BASS_SetVolume(1);
+    }
+}
+
