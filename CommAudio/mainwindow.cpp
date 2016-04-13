@@ -212,7 +212,6 @@ void MainWindow::on_stopButton_server_clicked()
 void MainWindow::on_pauseButton_server_clicked()
 {
     _bm.pause();
-
 }
 
 void MainWindow::on_stopButton_client_clicked()
@@ -222,6 +221,13 @@ void MainWindow::on_stopButton_client_clicked()
 
 void MainWindow::on_muteButtonServer_clicked()
 {
-    _bm.mute();
+    _bm.mute(); 
 }
 
+
+void MainWindow::on_microphoneButton_client_clicked()
+{
+    MicrophoneDialog c(this);
+    c.setModal(true);
+    c.exec();
+}
