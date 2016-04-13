@@ -181,7 +181,6 @@ bool setupTcpSocket(QString ipaddr)
     {
         qDebug() << "Failed to connect to the server" << WSAGetLastError();
         closesocket(TcpSocket);
-        WSACleanup();
         return false;
     }
 
@@ -644,10 +643,11 @@ void clientCleanup()
 --
 -- NOTES:
 ----------------------------------------------------------------------------------------------------------------------*/
-void downloadFile(const char* filename)
-{
+void downloadFile(const char* filename){
     int size;
-    getFileFromServer(TcpSocket, filename, size);
+    std::vector<std::string> fns = split(filename, ',');
+    size = std::stoi(fns[1]);
+    getFileFromServer(TcpSocket, fns[0].c_str(), size);
 }
 
 DWORD WINAPI sendThread(LPVOID lpParameter){

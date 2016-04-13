@@ -88,7 +88,9 @@ void MainWindow::on_updateButton_clicked()
    for(auto elem : filesReceived) {
        // each vector will have 2 elements - the file name, and the size
        //std::vector<std::string> singleFnameAndSize = split(elem, ',');
-       ui->listWidget_serverFiles->addItem(QString::fromStdString(elem);
+
+       ui->listWidget_serverFiles->addItem(QString::fromStdString(elem));
+
        // access singleFnameAndSize[0] to get the filename
        // access singleFnameAndSize[1] to get the size in string form
        // update your listwidget thingy here
