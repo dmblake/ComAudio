@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QListWidget>
 #include "buffermanager.h"
+#include "shared.h"
 
 namespace Ui {
 class MainWindow;
@@ -51,6 +52,7 @@ private slots:
 
     void on_microphoneButton_server_clicked();
 
+    void on_microphoneButton_client_clicked();
 
 private:
     Ui::MainWindow *ui;

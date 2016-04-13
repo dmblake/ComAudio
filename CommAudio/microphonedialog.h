@@ -2,8 +2,8 @@
 #define MICROPHONEDIALOG_H
 
 #include <QDialog>
-#include <QAudioRecorder>
-#include <QAudioProbe>
+#include <QBuffer>
+#include "shared.h"
 
 namespace Ui {
 class MicrophoneDialog;
@@ -17,10 +17,15 @@ public:
     explicit MicrophoneDialog(QWidget *parent = 0);
     ~MicrophoneDialog();
 
+private slots:
+    void on_startButton_clicked();
+
+    void on_pushButton_clicked();
+
 private:
     Ui::MicrophoneDialog *ui;
-    QAudioRecorder *audioRecorder;
-    QAudioProbe *probe;
+//    QAudioRecorder *audioRecorder;
+//    QAudioProbe *probe;
 };
 
 #endif // MICROPHONEDIALOG_H
