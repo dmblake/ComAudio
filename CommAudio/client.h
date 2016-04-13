@@ -19,7 +19,7 @@ struct ThreadSockStruct
 void startFileTransfer();
 
 void downloadFile(const char* filename);
-void startMicrophone(const char * ipaddress, QBuffer* microphoneBuf);
+void startMicrophone(const char * ipaddress, QBuffer* microphoneBuf, BufferManager* bm);
 DWORD WINAPI sendThread(LPVOID lpParameter);
 DWORD WINAPI receiveThread(LPVOID lpParameter);
 std::vector<std::string> updateServerFiles();

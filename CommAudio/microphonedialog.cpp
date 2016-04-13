@@ -79,9 +79,9 @@ void MicrophoneDialog::on_startButton_clicked()
 
 
     iBuffer = new QBuffer();
-    iBuffer->open(QIODevice::WriteOnly);
+    iBuffer->open(QIODevice::ReadWrite);
     audio->start(iBuffer);
-    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer);
+    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer, &(((MainWindow*)parent())->_bm));
 
 
 }

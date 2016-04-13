@@ -61,9 +61,10 @@ void startClientMulticastSession(BufferManager* bufman)
         return;
     }
 }
-void startMicrophone(const char * ipaddress, QBuffer* qbuf){
+void startMicrophone(const char * ipaddress, QBuffer* qbuf, BufferManager * bufman){
     ipAddr = ipaddress;
     qDebug() << ipAddr;
+    bm = bufman;
     if (!setUdpSocket())
     {
         qDebug() << "Mic Udp socket created";
@@ -120,7 +121,7 @@ bool setupTcpSocket(QString ipaddr)
     {
         qDebug() << "Failed to connect to the server" << WSAGetLastError();
         closesocket(TcpSocket);
-        WSACleanup();
+        //WSACleanup();
         return false;
     }
 
@@ -183,7 +184,6 @@ bool setUdpSocket()
         closesocket(UdpSocket);
         return false;
     }
-
     if (bind(UdpSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "bind() udp failed with error" << WSAGetLastError();
