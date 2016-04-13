@@ -48,12 +48,14 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     if(_server == true){
         ui->tabWidget->setTabEnabled(1,false);
         startServer();
+        startClient();
         isServer = true;
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
+        startClient();
     }
 
     qDebug() << server;
@@ -79,7 +81,16 @@ void MainWindow::printToListView(std::string msg)
 
 void MainWindow::on_updateButton_clicked()
 {
-    startFileTransfer();
+   std::vector<std::string> filesReceived = updateServerFiles();
+   ui->listWidget_serverFiles->clear();
+   for(auto elem : filesReceived) {
+       // each vector will have 2 elements - the file name, and the size
+       std::vector<std::string> singleFnameAndSize = split(elem, ',');
+       ui->listWidget_serverFiles->addItem(QString::fromStdString(singleFnameAndSize[0]));
+       // access singleFnameAndSize[0] to get the filename
+       // access singleFnameAndSize[1] to get the size in string form
+       // update your listwidget thingy here
+    }
 }
 
 void MainWindow::on_close_clicked()
@@ -91,19 +102,68 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_playButton_server_clicked()
 {
     startServerMulticastSession();
+    playback();
 }
 
 void MainWindow::on_playButton_client_clicked()
 {
     startClientMulticastSession();
+    playback();
 }
 
+// hank revis
 void MainWindow::on_refreshButton_clicked()
 {
-    std::string extension = "mp3";
-    std::string serverList = listAllFiles(extension);
-    QString str = QString::fromStdString(serverList);
-    qDebug()<< str;
+    ui->listWidget->clear();
+    std::string serverList = listAllFiles(".wav");
+    serverList += listAllFiles(".mp3");
+    std::vector<std::string> list = split(serverList, '\n');
+    for (std::string elem : list) {
+        QString str = QString::fromStdString(elem);
+        ui->listWidget->addItem(str);
+    }
+
+    qDebug()<< serverList.c_str();
+}
+
+
+//void MainWindow::on_microphoneButton_server_clicked()
+//{
+
+//    //MircophoneDialog c(this);
+//}
+
+// client side item selection
+void MainWindow::on_listWidget_2_itemClicked(QListWidgetItem *item)
+{
+    QString txt = item->text();
+    //setFilename(txt);
+}
+
+// server side item selection
+void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
+{
+    std::string txt = item->text().toUtf8().constData();
+    std::vector<std::string> vec = split(txt, ',');
+    setFilename(vec[0]);
+}
+
+void MainWindow::on_downloadButton_clicked()
+{
+
+    QListWidgetItem *selected = ui->listWidget_serverFiles->currentItem();
+    std::string songToDownload = selected->text().toStdString();
+    //qDebug() << songToDownload.c_str();
+    downloadFile(songToDownload.c_str());
+
+    ui->playlistWidget->clear();
+    std::string serverList = listAllFiles(".wav");
+    serverList += listAllFiles(".mp3");
+    std::vector<std::string> list = split(serverList, '\n');
+    for (std::string elem : list) {
+        QString str = QString::fromStdString(elem);
+        ui->playlistWidget->addItem(str);
+    }
 }
 
 
@@ -111,5 +171,14 @@ void MainWindow::on_microphoneButton_server_clicked()
 {
 
     MicrophoneDialog c(this);
+    c.setModal(true);
+    c.exec();
 }
 
+
+void MainWindow::on_microphoneButton_client_clicked()
+{
+    MicrophoneDialog c(this);
+    c.setModal(true);
+    c.exec();
+}
