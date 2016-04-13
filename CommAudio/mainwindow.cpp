@@ -110,6 +110,6 @@ void MainWindow::on_refreshButton_clicked()
 void MainWindow::on_microphoneButton_server_clicked()
 {
 
-    MircophoneDialog c(this);
+    MicrophoneDialog c(this);
 }
 
