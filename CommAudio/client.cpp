@@ -103,6 +103,25 @@ bool setupTcpSocket(QString ipaddr)
  * Creates and binds the UDP Socket for mic.
  * Fills the peerAddr sockaddr_in.
  */
+/*
+* Create and bind the udp socket.
+* Update the client address in the sockStruct
+*/
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   setUdpSocket
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  bool setUdpSocket()
+--
+-- RETURNS:    bool: true if socket is setup succesfully. False otherwise
+--
+-- NOTES:
+-- Create and bind the client multicast socket. 
+-- Enable reuseaddr and join the multicast group.
+----------------------------------------------------------------------------------------------------------------------*/
 bool setUdpSocket()
 {
     struct hostent *hp;
@@ -143,9 +162,21 @@ bool setUdpSocket()
     return true;
 }
 
-/*
- * Similar to the server, except the sock options are not set here
- */
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   setupClientMulticastSocket
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  bool setupClientMulticastSocket()
+--
+-- RETURNS:    bool: true if socket is setup succesfully. False otherwise
+--
+-- NOTES:
+-- Create and bind the client multicast socket. 
+-- Enable reuseaddr and join the multicast group.
+----------------------------------------------------------------------------------------------------------------------*/
 bool setupClientMulticastSocket()
 {
     fillClientMcastStruct(&cMcastStruct);
@@ -173,11 +204,25 @@ bool setupClientMulticastSocket()
         closesocket(cMcastStruct.Sock);
         return false;
     }
-
     return true;
-    
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   ClientMcastThread
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
+--                 LPVOID lpParameter: The thread parameters (unused)
+-- RETURNS:    DWORD: The exit code of the thread
+--
+-- NOTES:
+-- Creates a thread that handles the processing of WSARecvFrom events from the
+-- multicast socket and passes them to a worker routing to complete the socket
+-- I/O processing.
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
 {
     qDebug() << "client mcast thread started";
@@ -245,7 +290,6 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         }
     }
 }
-
 
 
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags)
