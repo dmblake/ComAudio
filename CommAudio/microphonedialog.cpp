@@ -8,7 +8,7 @@ MicrophoneDialog::MicrophoneDialog(QWidget *parent) :
     ui(new Ui::MicrophoneDialog)
 {
     ui->setupUi(this);
-
+    //MicrophoneDialog *md = this;
     info = QAudioDeviceInfo::defaultInputDevice();
 
     devicesAvailable = info.availableDevices(QAudio::AudioInput);
@@ -38,6 +38,14 @@ void MicrophoneDialog::on_startButton_clicked()
 
     //destinationFile.setFileName("test.raw");
     //destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
+
+    info = QAudioDeviceInfo::defaultInputDevice();
+
+    devicesAvailable = info.availableDevices(QAudio::AudioInput);
+    foreach (QAudioDeviceInfo device, devicesAvailable) {
+        QString devName = device.deviceName();
+        ui->inputBox->addItem(devName, QVariant(devName));
+    }
 
     QBuffer *iBuffer;
 //    buffer = (char*)malloc(MAX_BUF);

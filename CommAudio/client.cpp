@@ -26,6 +26,7 @@ MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
 bool playing = false;
+MicrophoneDialog *micD;
 
 
 // hank
@@ -62,6 +63,8 @@ void startClientMulticastSession(BufferManager* bufman)
     }
 }
 void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager * bufman){
+    micD = md;
+    micD->audioOutputDevice = micD->audioOutput->start();
     ipAddr = ipaddress;
     qDebug() << ipAddr;
     bm = bufman;
@@ -78,7 +81,7 @@ void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager
         qDebug() << "Cannot fill perrAddr";
     }
 
-    if ((hMicThread = CreateThread(NULL, 0, ClientMicRecvThread, NULL,
+    if ((hMicThread = CreateThread(NULL, 0, ClientMicRecvThread, md,
         0, NULL)) == NULL)
     {
         qDebug() << "CreateMicRecvThread() failed with error " << GetLastError();
@@ -233,6 +236,7 @@ bool setupClientMulticastSocket()
 
 DWORD WINAPI ClientMicRecvThread(LPVOID lpParameter)
 {
+    MicrophoneDialog *md = (MicrophoneDialog*)lpParameter;
     qDebug() << "client mcast thread started";
     DWORD Index;
     DWORD Flags = 0;
@@ -324,7 +328,7 @@ void CALLBACK ClientMicRecvWorkerRoutine(DWORD Error, DWORD BytesTransferred, LP
     //SI->Buffer
     //BytesTransferred
     //qDebug() << "Received data" << SI->Buffer;
-    processIO(SI->Buffer, BytesTransferred);
+    processMicIO(SI->Buffer, BytesTransferred);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 
@@ -452,6 +456,13 @@ void processIO(char* data, DWORD len)
     }
 }
 
+void processMicIO(char* data, DWORD len)
+{
+    //QByteArray* qba = new QByteArray(data, len);
+    micD->audioOutputDevice->write(data);
+
+}
+
 void clientCleanup()
 {
     qDebug() << "client cleanup called";
@@ -472,20 +483,30 @@ DWORD WINAPI sendThread(LPVOID lpParameter){
     QByteArray qba;
     qint64 len = 0;
     char temp[BUF_LEN];
-    md->audioOutputDevice = md->audioOutput->start();
+   md->audioOutputDevice = md->audioOutput->start();
 
 
     while(md->isRecording){
         qba = md->audioInputDevice->readAll();
+        int nRet;
         md->audioOutputDevice->write(qba);
+        if (qba.length() > 0) {
+            nRet = sendto(UdpSocket, qba, qba.length(), 0, (SOCKADDR *)&(peerAddr), sizeof(sockaddr_in));
+            if (nRet < 0)
+            {
+                qDebug() << "sendto failed" << WSAGetLastError();
+            }
+        }
     }
     return 1;
 }
 
+
+
 DWORD WINAPI receiveThread(LPVOID lpParameter){
 
     while(1){
-        //receive function
+
     }
     return 1;
 }

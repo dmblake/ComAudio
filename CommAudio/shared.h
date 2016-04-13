@@ -6,6 +6,7 @@
 //#include <windows.h>
 #include <QDebug>
 #include "bass.h"
+//#include "scamaz"
 
 #define PORT            9999
 #define MCAST_PORT      9001
