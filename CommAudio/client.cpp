@@ -90,7 +90,7 @@ void startMicrophone(const char * ipaddress, char* microphoneBuf){
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   setupTcpSocket
--- DATE:       23/03/2016
+-- DATE:       10/03/2016
 -- REVISIONS:  
 -- DESIGNER:   Joseph Tam-Huang
 -- PROGRAMMER: Joseph Tam-Huang
