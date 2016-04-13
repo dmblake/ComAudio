@@ -21,6 +21,17 @@ Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
 bool playing = false;
 
+
+void startMicrophone(const char * ipaddress){
+    qDebug() << ipaddress;
+//    if(!setUdpSocket()){
+//        qDebug() << "udpsocket not working";
+//        return;
+//    }
+//    CreateThread(NULL,0,sendThread,0,0,NULL);
+//    CreateThread(NULL,0,receiveThread,0,0,NULL);
+}
+
 void startClient()
 {
     playbackBuffer = new Playback(MAX_BUF);
@@ -274,7 +285,7 @@ bool setUdpSocket()
     }
 
     // close accept socket right away for testing
-    closesocket(UdpSocket);
+    //closesocket(UdpSocket);
     return true;
 }
 
@@ -437,4 +448,20 @@ void clientCleanup()
 
 void downloadFile(const char* filename){
     getFileFromServer(TcpSocket, filename, 357420);
+}
+
+DWORD WINAPI sendThread(LPVOID lpParameter){
+
+    while(1){
+        //send function
+    }
+    return 1;
+}
+
+DWORD WINAPI receiveThread(LPVOID lpParameter){
+
+    while(1){
+        //send function
+    }
+    return 1;
 }

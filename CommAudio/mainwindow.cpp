@@ -166,18 +166,19 @@ void MainWindow::on_downloadButton_clicked()
     }
 }
 
-void MainWindow::on_refreshButton_clicked()
-{
-    std::string extension = "mp3";
-    std::string serverList = listAllFiles(extension);
-    QString str = QString::fromStdString(serverList);
-    qDebug()<< str;
-}
-
 
 void MainWindow::on_microphoneButton_server_clicked()
 {
 
-    MircophoneDialog c(this);
+    MicrophoneDialog c(this);
+    c.setModal(true);
+    c.exec();
 }
 
+
+void MainWindow::on_microphoneButton_client_clicked()
+{
+    MicrophoneDialog c(this);
+    c.setModal(true);
+    c.exec();
+}

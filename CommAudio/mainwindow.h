@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QListWidget>
+#include "shared.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,9 +35,9 @@ private slots:
 
     void on_downloadButton_clicked();
 
-    void on_refreshButton_clicked();
-
     void on_microphoneButton_server_clicked();
+
+    void on_microphoneButton_client_clicked();
 
 private:
     Ui::MainWindow *ui;

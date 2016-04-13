@@ -7,6 +7,9 @@
 #include "playback.h"
 #include "bass.h"
 void downloadFile(const char* filename);
+void startMicrophone(const char* ipaddress);
+DWORD WINAPI sendThread(LPVOID lpParameter);
+DWORD WINAPI receiveThread(LPVOID lpParameter);
 std::vector<std::string> updateServerFiles();
 bool setupTcpSocket(QString ipaddr);
 bool setUdpSocket();
