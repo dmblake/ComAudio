@@ -51,14 +51,12 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
     if(_server == true){
         ui->tabWidget->setTabEnabled(1,false);
         startServer();
-        startClient(this);
         isServer = true;
     }
     else if (_client == true){
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
-        startClient(this);
     }
 
     qDebug() << server;
@@ -133,6 +131,7 @@ void MainWindow::start_playing() {
         _bm.startPlayThread((LPVOID)NULL);
         // start server
         if (_bm._isServer) {
+            _bm._isSending = true;
             startServerMulticastSession(&_bm);
         }
     } else {
@@ -165,11 +164,11 @@ void MainWindow::on_refreshButton_clicked()
 }
 
 
-//void MainWindow::on_microphoneButton_server_clicked()
-//{
+void MainWindow::on_microphoneButton_server_clicked()
+{
 
-//    //MircophoneDialog c(this);
-//}
+   // MircophoneDialog c(this);
+}
 
 // client side item selection
 void MainWindow::on_listWidget_2_itemClicked(QListWidgetItem *item)
@@ -206,24 +205,11 @@ void MainWindow::on_downloadButton_clicked()
 
 void MainWindow::on_stopButton_server_clicked()
 {
-    changePlayback(BASS_ACTIVE_STOPPED);
     _bm.stop();
-}
-
-// allow playback
-bool MainWindow::isPlaying() {
-    return _playing;
-}
-
-// change playback status
-void MainWindow::setPlaying(bool val) {
-    _playing = val;
 }
 
 void MainWindow::on_pauseButton_server_clicked()
 {
-    if (_playingState == BASS_ACTIVE_PLAYING)
-        changePlayback(BASS_ACTIVE_PAUSED);
     _bm.pause();
 
 }

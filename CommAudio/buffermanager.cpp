@@ -32,7 +32,7 @@ BOOL CALLBACK fileSeek(QWORD offset, void* user)
 
 
 BufferManager::BufferManager(int len, bool server) :
-    _pb(new CircularBuffer(len)), _net(new CircularBuffer(len)), _isServer(server), _isPlaying(false)
+    _pb(new CircularBuffer(len)), _net(new CircularBuffer(len)), _isServer(server), _isPlaying(false), _isSending(false)
 {
     if (!BASS_Init(-1, 44100, 0, 0, 0)) {
         qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
@@ -205,8 +205,10 @@ void BufferManager::stop() {
     case BASS_ACTIVE_PLAYING:
         BASS_ChannelStop(_str);
         _isPlaying = false;
+        _isSending = false;
         _str = 0;
         _pb->clear();
+        _net->clear();
         break;
     }
 }

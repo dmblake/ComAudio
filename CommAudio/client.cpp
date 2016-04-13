@@ -20,172 +20,6 @@ extern struct sockaddr_in myAddr;
 BufferManager* bm;
 
 MainWindow* mw;
-Playback* playbackBuffer;
-CircularBuffer* networkBuffer;
-
-void startClient(MainWindow* window)
-{
-    mw = window;
-    playbackBuffer = new Playback(MAX_BUF);
-    networkBuffer = new CircularBuffer(MAX_BUF);
-
-
-    if (!BASS_Init(-1, 44100, 0, 0, 0)) {
-        qDebug() << "Failed to init bass " << BASS_ErrorGetCode();
-        mw->printToListView("Failed to init BASS");
-    }
-}
-
-// handles when you press the play button
-// temp function
-void playback()
-{
-    mw->setPlaying(true);
-    playbackBuffer->setPlaying(true);
-    if (hPlaybackThread != INVALID_HANDLE_VALUE) {
-        CloseHandle(hPlaybackThread);
-        hPlaybackThread = INVALID_HANDLE_VALUE;
-    }
-    if (hFileReadThread != INVALID_HANDLE_VALUE) {
-        CloseHandle(hPlaybackThread);
-        hFileReadThread = INVALID_HANDLE_VALUE;
-    }
-   // hPlaybackThread = CreateThread(NULL, 0, PlaybackThreadProc, playbackBuffer, 0, NULL);
-    hPlaybackThread = CreateThread(NULL,0, PlaybackFileProc, playbackBuffer, 0, NULL);
-    hFileReadThread = CreateThread(NULL, 0, Playback::startThread, playbackBuffer, 0, NULL);
-
-}
-
-void setFilename(std::string str) {
-    playbackBuffer->setFilename(str.c_str());
-}
-
-DWORD WINAPI PlaybackFileProc(LPVOID param) {
-    HSTREAM str = 0;
-    Playback* pb = (Playback*)param;
-    while (mw->isPlaying() && pb->isPlaying()) {
-        if (str == 0) {
-            if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
-                qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-            }
-
-            // auto start, move this away!
-            if (!BASS_ChannelPlay(str, FALSE)) {
-                qDebug() << "Failed to play" << BASS_ErrorGetCode();
-            }
-        }
-        // check for pausing
-        switch (mw->_playingState) {
-        case BASS_ACTIVE_PAUSED:
-            // pause stream
-            BASS_ChannelPause(str);
-            // handle stopping while paused, otherwise just wait
-            while (mw->_playingState == BASS_ACTIVE_PAUSED) {
-            }
-            BASS_ChannelPlay(str, FALSE);
-            break;
-        }
-        // if data is in the buffer, start any stopped stream
-        if (pb->getDataAvailable() > 20000) {
-            switch (BASS_ChannelIsActive(str)) {
-            case BASS_ACTIVE_PAUSED:
-                break;
-            case BASS_ACTIVE_PLAYING:
-                break;
-            case BASS_ACTIVE_STALLED:
-                break;
-            case BASS_ACTIVE_STOPPED:
-                // play
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
-                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-                }
-                // auto start, move this away!
-                if (!BASS_ChannelPlay(str, FALSE)) {
-                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
-                }
-                break;
-            case -1:
-                qDebug() << "Error in BASS status";
-
-            }
-        }
-    }
-    switch (mw->_playingState) {
-    case BASS_ACTIVE_STOPPED:
-        BASS_ChannelStop(str);
-        break;
-    case BASS_ACTIVE_PAUSED:
-        BASS_ChannelPause(str);
-        break;
-    case BASS_ACTIVE_PLAYING:
-        while(pb->isPlaying()) {}
-        changePlayback(BASS_ACTIVE_STOPPED);
-        break;
-    }
-
-    return 0;
-}
-
-DWORD WINAPI PlaybackThreadProc(LPVOID lpParameter) {
-    HSTREAM str = 0;
-    char tmp[BUF_LEN];
-    int datalen= 0;
-    int netdata = 0;
-    int playspace = 0;
-    Playback *pb = (Playback*)lpParameter;
-    memset(tmp, 0, BUF_LEN);
-
-
-    // main playback loop
-    while (mw->isPlaying()) {
-        // if there is space in the playback buffer and data in the network buffer
-        netdata = networkBuffer->getDataAvailable();
-        playspace = pb->getSpaceAvailable();
-        if (playspace > 0 && netdata > 0) {
-            // set amount of data to copy
-            datalen = (netdata > BUF_LEN) ? BUF_LEN : netdata;
-            networkBuffer->read(tmp, datalen);
-            pb->write(tmp, datalen);
-            // if stream is not created, do so now
-            // the check on data available is to ensure the entire header has been read in
-            if (str == 0 && playbackBuffer->getDataAvailable() > 20000) {
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
-                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-                }
-
-                // auto start, move this away!
-                if (!BASS_ChannelPlay(str, FALSE)) {
-                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
-                }
-            } // end init stream
-        } // end adding to data
-        if (pb->getDataAvailable() > 20000) {
-            int act = BASS_ChannelIsActive(str);
-            switch (BASS_ChannelIsActive(str)) {
-            case BASS_ACTIVE_PAUSED:
-                break;
-            case BASS_ACTIVE_PLAYING:
-                break;
-            case BASS_ACTIVE_STALLED:
-                break;
-            case BASS_ACTIVE_STOPPED:
-                // play
-                if (!(str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, pb->getFP(), pb))) {
-                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
-                }
-                // auto start, move this away!
-                if (!BASS_ChannelPlay(str, FALSE)) {
-                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
-                }
-                break;
-            case -1:
-                qDebug() << "Error in BASS status";
-
-            }
-        }
-    } // end while loop
-    return 1;
-} // end thread proc
 
 // hank
 std::vector<std::string> updateServerFiles()
@@ -219,7 +53,6 @@ void startClientMulticastSession(BufferManager* bufman)
         qDebug() << "CreateThread() failed with error " << GetLastError();
         return;
     }
-    playback();
 }
 
 /*
@@ -468,19 +301,6 @@ void clientCleanup()
     WSACleanup();
 }
 
-void changePlayback(DWORD state) {
-    switch (state) {
-    case BASS_ACTIVE_STOPPED:
-        mw->setPlaying(false);
-        mw->_playingState = state;
-        playbackBuffer->clear();
-        break;
-    case BASS_ACTIVE_PAUSED:
-       // mw->setPlaying(false);
-        mw->_playingState = state;
-        break;
-    }
-}
 
 void downloadFile(const char* filename){
     getFileFromServer(TcpSocket, filename, 357420);

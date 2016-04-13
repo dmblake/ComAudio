@@ -17,14 +17,8 @@ void startClientMulticastSession(BufferManager* bm);
 void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWSAOVERLAPPED Overlapped, DWORD InFlags);
 DWORD WINAPI ClientMcastThread(LPVOID lpParameter);
 void processIO(char* data, DWORD len);
-void startClient(MainWindow* window);
-void playback();
 DWORD WINAPI PlaybackThreadProc(LPVOID lpParamater);
 DWORD WINAPI PlaybackFileProc(LPVOID param);
 void setFilename(std::string str);
-extern CircularBuffer* networkBuffer;
-extern Playback* playbackBuffer;
 extern MainWindow *mw;
-void stopPlayback();
-void changePlayback(DWORD state);
 #endif // CLIENT_H

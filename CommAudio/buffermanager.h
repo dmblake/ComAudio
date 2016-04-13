@@ -19,6 +19,7 @@ public:
     CircularBuffer * _net;
     bool _isServer;
     bool _isPlaying;
+    bool _isSending;
     static DWORD loadFromFile(LPVOID param);
     DWORD BufferManager::startReadThread(LPVOID instance);
     bool BufferManager::setFilename(const char * fn);

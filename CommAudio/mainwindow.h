@@ -19,9 +19,6 @@ public:
     ~MainWindow();
     void printToListView(std::string msg);
 
-    bool isPlaying();
-    void setPlaying(bool val);
-    int _playingState = -1;
     BufferManager _bm;
 
 
@@ -51,6 +48,8 @@ private slots:
     void on_stopButton_client_clicked();
 
     void on_muteButtonServer_clicked();
+
+    void on_microphoneButton_server_clicked();
 
 private:
     Ui::MainWindow *ui;

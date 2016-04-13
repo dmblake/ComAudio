@@ -36,6 +36,7 @@ void startServerMulticastSession(BufferManager* bm)
     {
         qDebug() << "ServerMcastThread could not be created";
     }
+    qDebug() << "Started ServerMcastThread";
 }
 
 bool setupListenSocket()
@@ -103,32 +104,12 @@ DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 {
     DWORD nBytesRead;
-    HANDLE hFile;
     int nRet;
     BufferManager* bm = (BufferManager*)lpParameter;
-    /*
-    hFile = CreateFile
-            (L"C:\\test\\06 Holland, 1945.mp3",               // file to open
-            GENERIC_READ,
-            0,
-            (LPSECURITY_ATTRIBUTES)NULL,       // share for reading
-            OPEN_EXISTING,         // existing file only
-            FILE_ATTRIBUTE_NORMAL, // normal file
-            (HANDLE)NULL);
 
-    if (hFile == INVALID_HANDLE_VALUE)
-    {
-        qDebug() << GetLastError();
-    }
-    else
-    {
-        qDebug() << "hfile ok";
-    }
-    */
     char sendBuff[BUF_LEN];
-    int ret;
 
-    while(bm->_isPlaying) {
+    while(bm->_isSending) {
         nBytesRead = bm->_net->read(sendBuff, BUF_LEN);
         if (nBytesRead > 0) {
             nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
@@ -139,34 +120,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
         }
     }
 
-    
-/*
-    while (ReadFile(hFile, sendBuff, BUF_LEN, &nBytesRead, NULL))
-    {
-        // Sending Datagrams
-
-        if (nBytesRead > 0)
-        {
-
-            qDebug() << sendBuff;
-            //mw->printToListView(sendBuff);
-            
-            nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
-            if (nRet < 0)
-            {
-                qDebug() << "sendto failed" << WSAGetLastError();
-            }
-            Sleep(10);
-        }
-        else
-        {
-            qDebug() << "file close and thread ends";
-            CloseHandle(hFile);
-            ExitThread(3);
-        }
-    }
-    */
-    qDebug() << "finished sending";
+    qDebug() << "Exiting send thread";
     ExitThread(3);
 }
 
