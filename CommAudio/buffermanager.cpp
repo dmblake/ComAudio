@@ -208,7 +208,7 @@ void BufferManager::stop() {
         _isSending = false;
         _str = 0;
         _pb->clear();
-        _net->clear();
+        //_net->clear();   // this causes a race condition where you might send junk data; clear _net in server.cpp mcast thread
         break;
     }
 }
@@ -234,7 +234,7 @@ void BufferManager::mute() {
     if (BASS_GetVolume() > 0) {
         BASS_SetVolume(0);
     } else {
-        BASS_SetVolume(1);
+        BASS_SetVolume(0.8);
     }
 }
 

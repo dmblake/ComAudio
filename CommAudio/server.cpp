@@ -110,6 +110,8 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     char sendBuff[BUF_LEN];
 
     while(bm->_isSending) {
+        //qDebug() << "_net data : " << bm->_net->getDataAvailable() << "\n_pb data : " << bm->_pb->getDataAvailable();
+        //while (bm->_net->getDataAvailable() < BUF_LEN) {};
         nBytesRead = bm->_net->read(sendBuff, BUF_LEN);
         if (nBytesRead > 0) {
             nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
@@ -119,7 +121,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
             }
         }
     }
-
+    bm->_net->clear(); // clear net after done sending
     qDebug() << "Exiting send thread";
     ExitThread(3);
 }

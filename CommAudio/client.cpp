@@ -226,7 +226,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
     while (TRUE)
     {
         //qDebug() << "wait for multiple event";
-        Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, 5000, TRUE);
+        Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, 10000, TRUE);
         if (Index == WAIT_IO_COMPLETION)
         {
             // An overlapped request completion routine
