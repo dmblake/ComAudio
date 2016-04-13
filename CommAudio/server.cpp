@@ -39,6 +39,21 @@ void startServerMulticastSession(BufferManager* bm)
     qDebug() << "Started ServerMcastThread";
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   setupListenSocket
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  bool setupListenSocket()
+--
+-- RETURNS:    bool: true if socket is setup succesfully. False otherwise
+--
+-- NOTES:
+-- Creates and binds the Listen Socket and creates a thread to handle connection
+-- attemps by clients.
+----------------------------------------------------------------------------------------------------------------------*/
 bool setupListenSocket()
 {
     qDebug()<< "setupListenSocket called";
@@ -74,6 +89,22 @@ bool setupListenSocket()
 }
 
 // hank revis
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   AcceptSocketThread
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
+--                  LPVOID lpParameter: The thread parameters (unused)
+--
+-- RETURNS:    DWORD: The exit code of the thread
+--
+-- NOTES:
+-- Creates an accept socket and passes it to a thread that is responsible for
+-- file transfer for each client connecting to the server.
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
 {
     qDebug() << "inside accept socket thread";
@@ -101,6 +132,20 @@ DWORD WINAPI FileTransferThread(LPVOID lpParameter)
     return 0;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   ServerMcastThread
+-- DATE:       
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
+--                 LPVOID lpParameter: A pointer to the BufferManager object
+-- RETURNS:    DWORD: The exit code of the thread
+--
+-- NOTES:
+-- 
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 {
     DWORD nBytesRead;
@@ -126,13 +171,24 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     ExitThread(3);
 }
 
-/*
- * Creates and bind a UDP socket.
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   setupServerMulticastSocket
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  bool setupServerMulticastSocket()
+--
+-- RETURNS:    bool: true if socket is setup succesfully. False otherwise
+--
+-- NOTES:
+-- Creates and bind a UDP multicast socket.
  * Fills in the information for the ip_mreq structure which contains the
  * multicast information for IPv4 addresses
- * The UDP socket is added to the multicast group and the number of
- * network hops(TTL) is set.
- */
+ * The UDP socket is added to the multicast group, the number of
+ * network hops(TTL) is set and the loop back is disabled.
+----------------------------------------------------------------------------------------------------------------------*/
 bool setupServerMulticastSocket()
 {
     fillServerMcastStruct(&sMcastStruct);
