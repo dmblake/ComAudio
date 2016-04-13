@@ -294,13 +294,18 @@ DWORD WINAPI ClientMicRecvThread(LPVOID lpParameter)
             qDebug() << "index = wait io completion";
             continue;
         }
+        else if (!micD->isRecording){
+            qDebug() << "error socket closed";
+            closesocket(UdpSocket);
+            ExitThread(3);
+        }
         else
         {
             // A bad error occurred: stop processing!
             // If we were also processing an event
             // object, this could be an index to the event array.
             qDebug() << "error socket closed";
-            closesocket(ClientMulticastSocket);
+            closesocket(UdpSocket);
             ExitThread(3);
         }
     }
@@ -398,6 +403,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             //qDebug() << "index = wait io completion";
             continue;
         }
+
         else
         {
             // A bad error occurred: stop processing!
@@ -459,7 +465,7 @@ void processIO(char* data, DWORD len)
 void processMicIO(char* data, DWORD len)
 {
     //QByteArray* qba = new QByteArray(data, len);
-    micD->audioOutputDevice->write(data);
+    micD->audioOutputDevice->write(data,len);
 
 }
 
@@ -497,16 +503,6 @@ DWORD WINAPI sendThread(LPVOID lpParameter){
                 qDebug() << "sendto failed" << WSAGetLastError();
             }
         }
-    }
-    return 1;
-}
-
-
-
-DWORD WINAPI receiveThread(LPVOID lpParameter){
-
-    while(1){
-
     }
     return 1;
 }
