@@ -483,13 +483,13 @@ DWORD WINAPI sendThread(LPVOID lpParameter){
     QByteArray qba;
     qint64 len = 0;
     char temp[BUF_LEN];
-   md->audioOutputDevice = md->audioOutput->start();
+   //md->audioOutputDevice = md->audioOutput->start();
 
 
     while(md->isRecording){
         qba = md->audioInputDevice->readAll();
         int nRet;
-        md->audioOutputDevice->write(qba);
+        //md->audioOutputDevice->write(qba);
         if (qba.length() > 0) {
             nRet = sendto(UdpSocket, qba, qba.length(), 0, (SOCKADDR *)&(peerAddr), sizeof(sockaddr_in));
             if (nRet < 0)

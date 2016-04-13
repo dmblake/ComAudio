@@ -77,11 +77,11 @@ void MicrophoneDialog::on_startButton_clicked()
 
     if (indexSelected == -1) {
         audioInput = new QAudioInput(format,this);
-        audioOutput = new QAudioOutput(format, this);
+        audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultInputDevice(),format, this);
     }
     else {
         audioInput = new QAudioInput(devSelected,format,this);
-        audioOutput = new QAudioOutput(devSelected, format, this);
+        audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultInputDevice(), format, this);
     }
 
     isRecording = true;
