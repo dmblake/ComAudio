@@ -51,6 +51,7 @@ private slots:
 
     void on_microphoneButton_server_clicked();
 
+
 private:
     Ui::MainWindow *ui;
     bool _server;

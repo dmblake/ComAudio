@@ -3,6 +3,7 @@
 #include "server.h"
 #include "FileUtil.h"
 #include "client.h"
+#include "microphonedialog.h"
 #include <QFile>
 #include <QTextStream>
 
@@ -223,3 +224,4 @@ void MainWindow::on_muteButtonServer_clicked()
 {
     _bm.mute();
 }
+

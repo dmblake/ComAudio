@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -23,6 +23,7 @@ SOURCES += main.cpp\
     FileUtil.cpp \
     settingsdialog.cpp \
     buffermanager.cpp
+    microphonedialog.cpp
 
 HEADERS  += mainwindow.h \
     server.h \
@@ -37,6 +38,7 @@ HEADERS  += mainwindow.h \
     FileUtil.h \
     settingsDialog.h \
     buffermanager.h
+    microphonedialog.h
 
 
 LIBS += -LC:\dicom\lib -lws2_32 -lwsock32 -L"$$PWD\lib" -lbass
@@ -44,7 +46,8 @@ LIBS += -LC:\dicom\lib -lws2_32 -lwsock32 -L"$$PWD\lib" -lbass
 INCLUDEPATH += D:\QtProjects\ComAudio\CommAudio\lib
 
 FORMS    += mainwindow.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    microphonedialog.ui
 
 RESOURCES += \
     images.qrc \
