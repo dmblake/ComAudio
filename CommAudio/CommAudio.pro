@@ -22,7 +22,7 @@ SOURCES += main.cpp\
     circularbuffer.cpp \
     FileUtil.cpp \
     settingsdialog.cpp \
-    buffermanager.cpp
+    buffermanager.cpp \
     microphonedialog.cpp
 
 HEADERS  += mainwindow.h \
@@ -37,7 +37,7 @@ HEADERS  += mainwindow.h \
     dirent.h \
     FileUtil.h \
     settingsDialog.h \
-    buffermanager.h
+    buffermanager.h \
     microphonedialog.h
 
 

@@ -17,13 +17,13 @@ CircularBuffer::~CircularBuffer() {
         free(_data);
 }
 
-int CircularBuffer::read(char * buf, int len) {
+DWORD CircularBuffer::read(char * buf, DWORD len) {
     if (buf == 0 || len <= 0 || _writeBytesAvailable == _size || _size == 0)
         {
             return 0;
         }
 
-        int maxRead = _size - _writeBytesAvailable;
+        DWORD maxRead = _size - _writeBytesAvailable;
 
         if (len > maxRead)
         {
@@ -46,7 +46,7 @@ int CircularBuffer::read(char * buf, int len) {
         return len;
 }
 
-int CircularBuffer::write(const char * buf, int len) {
+DWORD CircularBuffer::write(const char * buf, DWORD len) {
     if (buf == 0 || len <= 0 || _writeBytesAvailable == 0)
         {
             return 0;
@@ -76,17 +76,17 @@ DWORD CircularBuffer::getSize() {
     return _size;
 }
 
-int CircularBuffer::getSpaceAvailable() {
+DWORD CircularBuffer::getSpaceAvailable() {
     return _writeBytesAvailable;
 }
 
-int CircularBuffer::getDataAvailable() {
+DWORD CircularBuffer::getDataAvailable() {
     return (_size - _writeBytesAvailable);
 }
 
 // clears buffer
 // returns amount of space available
-int CircularBuffer::clear() {
+DWORD CircularBuffer::clear() {
     memset(_data, 0, _size);
     _writePtr = _readPtr = 0;
     _writeBytesAvailable = _size;

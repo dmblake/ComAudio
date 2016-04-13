@@ -12,20 +12,20 @@ class CircularBuffer
 public:
     CircularBuffer(int size);
     ~CircularBuffer();
-    int read(char * buf, int len);
-    int write(const char * buf, int len);
+    DWORD read(char * buf, DWORD len);
+    DWORD write(const char * buf, DWORD len);
     DWORD getSize();
-    int getSpaceAvailable();
-    int getDataAvailable();
-    int clear();
+    DWORD getSpaceAvailable();
+    DWORD getDataAvailable();
+    DWORD clear();
 protected:
     bool _reset = false;
 private:
     char * _data;
-    int _writeBytesAvailable;
-    int _readPtr;
-    int _writePtr;
-    int _size;
+    DWORD _writeBytesAvailable;
+    DWORD _readPtr;
+    DWORD _writePtr;
+    DWORD _size;
 };
 
 #endif // CIRCULARBUFFER_H
