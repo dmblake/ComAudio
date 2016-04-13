@@ -29,6 +29,20 @@ bool playing = false;
 
 
 // hank
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   updateServerFiles
+-- DATE:       11/04/2016
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  std::vector<std::string> updateServerFiles()
+--                  
+-- RETURNS:    std::vector<std::string>: The list of file names
+--
+-- NOTES:
+-- Retrieves the files available for download from the server.
+----------------------------------------------------------------------------------------------------------------------*/
 std::vector<std::string> updateServerFiles()
 {
     std::string str = getListFromServer(TcpSocket);
@@ -38,6 +52,23 @@ std::vector<std::string> updateServerFiles()
     return filesAndSizes;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   startClientMulticastSession
+-- DATE:       24/03/2016
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  void startClientMulticastSession(BufferManager* bufman)
+--                  BufferManager* bufman: A pointer to the buffer manager
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Initialized the client multicast session. 
+-- Creates and sets up the multicast socket and starts a worker thread to serivce 
+-- the completed I/O requests.
+----------------------------------------------------------------------------------------------------------------------*/
 void startClientMulticastSession(BufferManager* bufman)
 {
     qDebug() << "startClientMulticastSession called";
@@ -62,6 +93,23 @@ void startClientMulticastSession(BufferManager* bufman)
     }
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   startClientMulticastSession
+-- DATE:       24/03/2016
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  void startClientMulticastSession(BufferManager* bufman)
+--                  BufferManager* bufman: A pointer to the buffer manager
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Initialized the client multicast session. 
+-- Creates and sets up the multicast socket and starts a worker thread to serivce 
+-- the completed I/O requests.
+----------------------------------------------------------------------------------------------------------------------*/
 void startMicrophone(const char * ipaddress, char* microphoneBuf){
     ipAddr = ipaddress;
     qDebug() << ipAddr;
@@ -549,6 +597,22 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
     }
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   processIO
+-- DATE:       15/03/2016
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  void processIO(char* data, DWORD len)
+--                  char* data: The data to process
+--                  DWORD len: The lenght of the data to process
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- 
+----------------------------------------------------------------------------------------------------------------------*/
 void processIO(char* data, DWORD len)
 {
     //qDebug() << data;
@@ -566,9 +630,24 @@ void clientCleanup()
     WSACleanup();
 }
 
-
-void downloadFile(const char* filename){
-    getFileFromServer(TcpSocket, filename, 357420);
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   downloadFile
+-- DATE:       11/04/2016
+-- REVISIONS:  
+-- DESIGNER:   
+-- PROGRAMMER: 
+--
+-- INTERFACE:  void downloadFile(const char* filename)
+--                  const char* filename: The name of the file to download
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+----------------------------------------------------------------------------------------------------------------------*/
+void downloadFile(const char* filename)
+{
+    int size;
+    getFileFromServer(TcpSocket, filename, size);
 }
 
 DWORD WINAPI sendThread(LPVOID lpParameter){
