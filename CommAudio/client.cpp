@@ -61,7 +61,7 @@ void startClientMulticastSession(BufferManager* bufman)
         return;
     }
 }
-void startMicrophone(const char * ipaddress, QBuffer* qbuf, BufferManager * bufman){
+void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager * bufman){
     ipAddr = ipaddress;
     qDebug() << ipAddr;
     bm = bufman;
@@ -85,7 +85,7 @@ void startMicrophone(const char * ipaddress, QBuffer* qbuf, BufferManager * bufm
         return;
     }
 
-    CreateThread(NULL,0,sendThread,qbuf,0,NULL);
+    CreateThread(NULL,0,sendThread,md,0,NULL);
 }
 
 /*
@@ -468,18 +468,16 @@ void downloadFile(const char* filename){
 
 DWORD WINAPI sendThread(LPVOID lpParameter){
 
-    QBuffer* sendBuffer = (QBuffer *) lpParameter;
+    MicrophoneDialog* md = (MicrophoneDialog *) lpParameter;
     QByteArray qba;
     qint64 len = 0;
     char temp[BUF_LEN];
+    md->audioOutputDevice = md->audioOutput->start();
 
-    while(1){
-        //send function
-        qba = sendBuffer->read(BUF_LEN);
-        while (bm->_pb->getSpaceAvailable() < qba.length()) {
-            // do nothing
-        }
-        bm->_pb->write(qba.data(), qba.length());
+
+    while(md->isRecording){
+        qba = md->audioInputDevice->readAll();
+        md->audioOutputDevice->write(qba);
     }
     return 1;
 }

@@ -4,6 +4,7 @@
 #include <QBuffer>
 #include "shared.h"
 #include "mainwindow.h"
+#include "microphonedialog.h"
 #include "network.h"
 #include "playback.h"
 #include "bass.h"
@@ -19,7 +20,7 @@ struct ThreadSockStruct
 void startFileTransfer();
 
 void downloadFile(const char* filename);
-void startMicrophone(const char * ipaddress, QBuffer* microphoneBuf, BufferManager* bm);
+void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager* bm);
 DWORD WINAPI sendThread(LPVOID lpParameter);
 DWORD WINAPI receiveThread(LPVOID lpParameter);
 std::vector<std::string> updateServerFiles();

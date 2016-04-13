@@ -1,15 +1,8 @@
 #include "microphonedialog.h"
 #include "ui_microphonedialog.h"
 #include "client.h"
-#include <QAudioInput>
-#include <QIODevice>
-#include <QFile>
 
-QAudioInput *audio;
-QFile destinationFile;
-QAudioDeviceInfo info;
-QList<QAudioDeviceInfo> devicesAvailable;
-char * buffer;
+
 MicrophoneDialog::MicrophoneDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MicrophoneDialog)
@@ -43,8 +36,8 @@ MicrophoneDialog::~MicrophoneDialog()
 void MicrophoneDialog::on_startButton_clicked()
 {
 
-//    destinationFile.setFileName("test.raw");
-//    destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
+    //destinationFile.setFileName("test.raw");
+    //destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
     QBuffer *iBuffer;
 //    buffer = (char*)malloc(MAX_BUF);
@@ -52,6 +45,8 @@ void MicrophoneDialog::on_startButton_clicked()
     QAudioFormat format;
     format.setSampleRate(8000);
     format.setCodec("audio/pcm");
+    format.setSampleSize(16);
+
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::UnSignedInt);
 
@@ -72,16 +67,20 @@ void MicrophoneDialog::on_startButton_clicked()
     qDebug()<<format.sampleType();
 
 
-    if (indexSelected == -1)
-        audio = new QAudioInput(format,this);
-    else
-        audio = new QAudioInput(devSelected,format,this);
+    if (indexSelected == -1) {
+        audioInput = new QAudioInput(format,this);
+        audioOutput = new QAudioOutput(format, this);
+    }
+    else {
+        audioInput = new QAudioInput(devSelected,format,this);
+        audioOutput = new QAudioOutput(devSelected, format, this);
+    }
 
-
+    isRecording = true;
     iBuffer = new QBuffer();
     iBuffer->open(QIODevice::ReadWrite);
-    audio->start(iBuffer);
-    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer, &(((MainWindow*)parent())->_bm));
+    audioInputDevice = audioInput->start();
+    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(), this, &(((MainWindow*)parent())->_bm));
 
 
 }
@@ -89,6 +88,8 @@ void MicrophoneDialog::on_startButton_clicked()
 
 void MicrophoneDialog::on_pushButton_clicked()
 {
-    audio->stop();
+    isRecording = false;
+    audioInput->stop();
+    audioOutput->stop();
     //destinationFile.close();
 }
