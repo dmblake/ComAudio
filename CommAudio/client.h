@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <QBuffer>
 #include "shared.h"
 #include "mainwindow.h"
 #include "network.h"
@@ -18,7 +19,7 @@ struct ThreadSockStruct
 void startFileTransfer();
 
 void downloadFile(const char* filename);
-void startMicrophone(const char * ipaddress, char* microphoneBuf);
+void startMicrophone(const char * ipaddress, QBuffer* microphoneBuf);
 DWORD WINAPI sendThread(LPVOID lpParameter);
 DWORD WINAPI receiveThread(LPVOID lpParameter);
 std::vector<std::string> updateServerFiles();

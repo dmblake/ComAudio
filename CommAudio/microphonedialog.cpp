@@ -57,6 +57,7 @@ void MicrophoneDialog::on_startButton_clicked()
 
     int indexSelected = ui->inputBox->currentIndex();
 
+
     QAudioDeviceInfo devSelected = devicesAvailable.takeAt(indexSelected);
     qDebug() << devSelected.deviceName();
 
@@ -80,7 +81,7 @@ void MicrophoneDialog::on_startButton_clicked()
     iBuffer = new QBuffer();
     iBuffer->open(QIODevice::WriteOnly);
     audio->start(iBuffer);
-    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer->buffer().data());
+    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer);
 
 
 }
