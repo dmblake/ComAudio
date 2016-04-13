@@ -5,6 +5,7 @@
 #include "FileUtil.h"
 SOCKET TcpSocket;
 SOCKET UdpSocket;
+const char* ipAddr;
 SOCKET ClientMulticastSocket;
 struct ip_mreq ClientMreq;
 struct sockaddr_in serverAddr;
@@ -22,14 +23,15 @@ CircularBuffer* networkBuffer;
 bool playing = false;
 
 
-void startMicrophone(const char * ipaddress){
-    qDebug() << ipaddress;
-//    if(!setUdpSocket()){
-//        qDebug() << "udpsocket not working";
-//        return;
-//    }
-//    CreateThread(NULL,0,sendThread,0,0,NULL);
-//    CreateThread(NULL,0,receiveThread,0,0,NULL);
+void startMicrophone(const char * ipaddress, char* microphoneBuf){
+    ipAddr = ipaddress;
+    qDebug() << ipAddr;
+    if(!setUdpSocket()){
+        qDebug() << "udpsocket not working";
+        return;
+    }
+    CreateThread(NULL,0,sendThread,microphoneBuf,0,NULL);
+    CreateThread(NULL,0,receiveThread,0,0,NULL);
 }
 
 void startClient()
@@ -262,7 +264,7 @@ bool setUdpSocket()
     peerAddr.sin_family = AF_INET;
     peerAddr.sin_port = htons(MIC_PORT);
 
-    if ((hp = gethostbyname(PEER_IP)) == NULL)
+    if ((hp = gethostbyname(ipAddr)) == NULL)
     {
         qDebug() << "Unkown peer address";
         closesocket(UdpSocket);
@@ -452,6 +454,8 @@ void downloadFile(const char* filename){
 
 DWORD WINAPI sendThread(LPVOID lpParameter){
 
+    char * sendBuffer = (char *) lpParameter;
+
     while(1){
         //send function
     }
@@ -461,7 +465,7 @@ DWORD WINAPI sendThread(LPVOID lpParameter){
 DWORD WINAPI receiveThread(LPVOID lpParameter){
 
     while(1){
-        //send function
+        //receive function
     }
     return 1;
 }

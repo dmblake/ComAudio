@@ -7,7 +7,7 @@
 #include "playback.h"
 #include "bass.h"
 void downloadFile(const char* filename);
-void startMicrophone(const char* ipaddress);
+void startMicrophone(const char * ipaddress, char* microphoneBuf);
 DWORD WINAPI sendThread(LPVOID lpParameter);
 DWORD WINAPI receiveThread(LPVOID lpParameter);
 std::vector<std::string> updateServerFiles();
