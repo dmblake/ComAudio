@@ -60,6 +60,9 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
         isServer = false;
     }
 
+    // refresh file list
+    on_refreshButton_clicked();
+
     qDebug() << server;
     qDebug() << client;
     qDebug() << ipaddr;
