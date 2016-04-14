@@ -9,7 +9,28 @@
 
 
 bool isServer;
-// hank revision
+
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:         MainWindow.cpp - The main window of the
+--
+-- PROGRAM:             CommAudio
+--
+-- FUNCTIONS:           explicit settingsDialog(QWidget *parent = 0);
+--                      ~settingsDialog();
+--                      void on_continueButton_clicked();
+--
+--
+-- DATE:                March 21st 2016 - Start/finished functionality for settings dialog
+--
+-- REVISIONS:           March 29th 2016 - Fixed crashing bug
+--
+-- DESIGNER:            Dhivya Manohar
+--
+-- PROGRAMMER:          Dhivya Manohar
+--
+-- NOTES:               This is the beginning of the program that prompts user to select for the type of user
+--                      they are.
+----------------------------------------------------------------------------------------------------------------------*/
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -99,14 +120,7 @@ void MainWindow::on_updateButton_clicked()
    std::vector<std::string> filesReceived = updateServerFiles();
    ui->listWidget_serverFiles->clear();
    for(auto elem : filesReceived) {
-       // each vector will have 2 elements - the file name, and the size
-       //std::vector<std::string> singleFnameAndSize = split(elem, ',');
-
        ui->listWidget_serverFiles->addItem(QString::fromStdString(elem));
-
-       // access singleFnameAndSize[0] to get the filename
-       // access singleFnameAndSize[1] to get the size in string form
-       // update your listwidget thingy here
     }
 }
 
@@ -119,25 +133,6 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_playButton_server_clicked()
 {
     start_playing();
-    // perform any other server related actions
-
-    /*  PRESERVED FOR REFERENCE : CHANGING STATE OF MAINWINDOW IS DEPRECATED : USE BUFFERMANAGER _BM
-    switch (_playingState) {
-    case BASS_ACTIVE_PLAYING:
-        break;
-    case BASS_ACTIVE_STOPPED:
-        _playingState = BASS_ACTIVE_PLAYING;
-        playback();
-        break;
-    case BASS_ACTIVE_PAUSED:
-        _playingState = BASS_ACTIVE_PLAYING;
-        break;
-    case -1: // first time only
-        startServerMulticastSession();
-        _playingState = BASS_ACTIVE_PLAYING;
-        playback();
-    }
-    */
 }
 
 void MainWindow::start_playing() {
@@ -176,8 +171,6 @@ void MainWindow::on_refreshButton_clicked()
         QString str = QString::fromStdString(elem);
         ui->listWidget->addItem(str);
     }
-
-    qDebug()<< serverList.c_str();
 }
 
 
@@ -207,7 +200,6 @@ void MainWindow::on_downloadButton_clicked()
 
     QListWidgetItem *selected = ui->listWidget_serverFiles->currentItem();
     std::string songToDownload = selected->text().toStdString();
-    //qDebug() << songToDownload.c_str();
     downloadFile(songToDownload.c_str());
 
     ui->playlistWidget->clear();

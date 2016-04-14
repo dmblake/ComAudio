@@ -18,7 +18,6 @@ SOURCES += main.cpp\
     server.cpp \
     client.cpp \
     network.cpp \
-    playback.cpp \
     circularbuffer.cpp \
     FileUtil.cpp \
     settingsdialog.cpp \
@@ -31,7 +30,6 @@ HEADERS  += mainwindow.h \
     shared.h \
     client.h \
     network.h \
-    playback.h \
     circularbuffer.h \
     bass.h \
     dirent.h \

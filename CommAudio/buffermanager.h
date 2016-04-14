@@ -26,7 +26,7 @@ public:
     BASS_FILEPROCS* getFP();
     void mute();
 private:
-    char * _filename;
+    char * _filename = 0 ;
     BASS_FILEPROCS _fp;
     HSTREAM _str;
     bool _eof = false;

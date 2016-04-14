@@ -6,7 +6,6 @@
 #include "mainwindow.h"
 #include "microphonedialog.h"
 #include "network.h"
-#include "playback.h"
 #include "bass.h"
 #include "buffermanager.h"
 
