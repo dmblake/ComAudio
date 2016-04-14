@@ -1,5 +1,34 @@
 #include "server.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:         server.cpp
+--
+-- PROGRAM:             CommAudio
+--
+-- FUNCTIONS:           void startServer()
+--                      void startServerMulticastSession(BufferManager* bm)
+--                      bool setupListenSocket()
+--                      DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
+--                      DWORD WINAPI FileTransferThread(LPVOID lpParameter)
+--                      DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
+--                      bool setupServerMulticastSocket()
+--                      void serverCleanup()
+--
+-- DATE:                10/03/2016
+--
+-- REVISIONS:           13/04/2016 - Added cleanup function
+--                      10/04/2016 - Added wrapper functions to be called by Qt button pushes
+--                      23/03/2016 - Created functions for multicast
+--
+-- DESIGNER:            Joseph Tam-Huang
+--
+-- PROGRAMMER:          Joseph Tam-Huang, Dhivya Manohar, Dylan Blake, Hank Lo
+--
+-- NOTES:               
+-- Responsible for creating and setting up all server related sockets. Sends 
+-- and processes incoming data from the clients.
+----------------------------------------------------------------------------------------------------------------------*/
+
 SOCKET ListenSocket;
 SOCKET ServerMulticastSocket;
 HANDLE hFileTransferThread;
@@ -10,10 +39,22 @@ extern struct sockaddr_in mcastAddr;
 extern struct sockaddr_in myAddr;
 McastStruct sMcastStruct;
 
+/*------------------------------------------------------------------------------------------------------------------
+-- void startServer()
+-- DATE:       10/04/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  void startServer()
+--
+-- RETURNS:    void
+--
+-- NOTES:
+-- Sets up the TCP listen socket.
+----------------------------------------------------------------------------------------------------------------------*/
 void startServer()
 {
-    //Start the file transfer thread
-    //Sets up the listen socket and accepts incoming connections
     if (!setupListenSocket())
     {
         qDebug() << "failed to setup ListenSocket";
@@ -24,7 +65,22 @@ void startServer()
     }    
 }
 
-
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   startServerMulticastSession
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  void startServerMulticastSession(BufferManager* bm)
+--                  BufferManager* bm: The pointer to the buffer manager
+--
+-- RETURNS:    void
+--
+-- NOTES:
+-- Creates and sets up the multicast socket and starts a thread to handle the 
+-- incoming datagrams.
+----------------------------------------------------------------------------------------------------------------------*/
 void startServerMulticastSession(BufferManager* bm)
 {
     if (!setupServerMulticastSocket())
@@ -88,7 +144,6 @@ bool setupListenSocket()
     return true;
 }
 
-// hank revis
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   AcceptSocketThread
 -- DATE:       23/03/2016
@@ -116,12 +171,25 @@ DWORD WINAPI AcceptSocketThread(LPVOID lpParameter)
         {
             qDebug() << "File transfer (Accept) Socket could not be created";
         }
-
-        //close accept socket after passing a copy to the thread
-        //closesocket(AcceptSocket);
     }
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   FileTransferThread
+-- DATE:       23/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  DWORD WINAPI FileTransferThread(LPVOID lpParameter)
+--                  LPVOID lpParameter: The thread parameters (unused)
+--
+-- RETURNS:    DWORD: The exit code of the thread
+--
+-- NOTES:
+-- Thread responsible for sending and receiving control messages and initiating
+-- file transfer.
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 {
     qDebug() << "in file transfer thread";
@@ -134,17 +202,18 @@ DWORD WINAPI FileTransferThread(LPVOID lpParameter)
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   ServerMcastThread
--- DATE:       
+-- DATE:       23/03/2016
 -- REVISIONS:  
--- DESIGNER:   
--- PROGRAMMER: 
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
 --
 -- INTERFACE:  DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 --                 LPVOID lpParameter: A pointer to the BufferManager object
 -- RETURNS:    DWORD: The exit code of the thread
 --
 -- NOTES:
--- 
+-- Reads data from the circular buffer and send it over the network through the
+-- multicast socket.
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
 {
@@ -155,8 +224,7 @@ DWORD WINAPI ServerMcastThread(LPVOID lpParameter)
     char sendBuff[BUF_LEN];
 
     while(bm->_isSending) {
-        //qDebug() << "_net data : " << bm->_net->getDataAvailable() << "\n_pb data : " << bm->_pb->getDataAvailable();
-        //while (bm->_net->getDataAvailable() < BUF_LEN) {};
+        
         nBytesRead = bm->_net->read(sendBuff, BUF_LEN);
         if (nBytesRead > 0) {
             nRet = sendto(sMcastStruct.Sock, sendBuff, nBytesRead, 0, (SOCKADDR *)&(sMcastStruct.mcastAddr), sizeof(sockaddr_in));
@@ -236,6 +304,20 @@ bool setupServerMulticastSocket()
     return true;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   serverCleanup
+-- DATE:       13/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  void serverCleanup()
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Socket cleanup code.
+----------------------------------------------------------------------------------------------------------------------*/
 void serverCleanup()
 {
     qDebug() << "server cleanup called";

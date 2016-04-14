@@ -3,6 +3,47 @@
 #include "client.h"
 #include "mainwindow.h"
 #include "FileUtil.h"
+
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:         client.cpp
+--
+-- PROGRAM:             CommAudio
+--
+-- FUNCTIONS:           std::vector<std::string> updateServerFiles()
+--                      void startClientMulticastSession(BufferManager* bufman)
+--                      void on_continueButton_clicked();
+--                      void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager * bufman)
+--                      bool setupTcpSocket(QString ipaddr)
+--                      bool fillPeerAddrStruct(const char* peerIp)
+--                      bool setUdpSocket()
+--                      bool setupClientMulticastSocket()
+--                      DWORD WINAPI ClientMicRecvThread(LPVOID lpParameter)
+--                      void CALLBACK ClientMicRecvWorkerRoutine(DWORD Error, DWORD BytesTransferred, 
+--                          LPWSAOVERLAPPED Overlapped, DWORD InFlags)
+--                      DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
+--                      void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, 
+--                          LPWSAOVERLAPPED Overlapped, DWORD InFlags)
+--                      void processIO(char* data, DWORD len)
+--                      void processMicIO(char* data, DWORD len)
+--                      void clientCleanup()
+--                      void downloadFile(const char* filename)
+--                      DWORD WINAPI sendThread(LPVOID lpParameter)
+--
+-- DATE:                10/03/2016
+--
+-- REVISIONS:           13/04/2016 - Added microphone completion routine
+--                      24/03/2016 - Added completion routine functions
+--                      24/03/2016 - Setup sockets
+--
+-- DESIGNER:            Joseph Tam-Huang
+--
+-- PROGRAMMER:          Joseph Tam-Huang, Dhivya Manohar, Dylan Blake, Hank Lo
+--
+-- NOTES:               
+-- Responsible for creating and setting up all client related sockets. Sends 
+-- and processes incoming data from the socket.
+----------------------------------------------------------------------------------------------------------------------*/
+
 SOCKET TcpSocket;
 SOCKET UdpSocket;
 const char* ipAddr;
@@ -31,8 +72,8 @@ MicrophoneDialog *micD;
 -- FUNCTION:   updateServerFiles
 -- DATE:       11/04/2016
 -- REVISIONS:  
--- DESIGNER:   
--- PROGRAMMER: 
+-- DESIGNER:   Hank Lo
+-- PROGRAMMER: Hank Lo
 --
 -- INTERFACE:  std::vector<std::string> updateServerFiles()
 --                  
@@ -52,7 +93,7 @@ std::vector<std::string> updateServerFiles()
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   startClientMulticastSession
--- DATE:       24/03/2016
+-- DATE:       10/03/2016
 -- REVISIONS:  
 -- DESIGNER:   Joseph Tam-Huang
 -- PROGRAMMER: Joseph Tam-Huang
@@ -121,8 +162,6 @@ void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager
         return;
     }
 
-    //micUdpStruct.Sock = UdpSocket;
-    //micUdpStruct.peerAddr = peerAddr;
     if (!fillPeerAddrStruct(ipAddr))
     {
         qDebug() << "Cannot fill peerAddr";
@@ -583,10 +622,6 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
         return;
     }
 
-    //process io here
-    //SI->Buffer
-    //BytesTransferred
-    //qDebug() << "Received data" << SI->Buffer;
     processIO(SI->Buffer, BytesTransferred);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
@@ -629,8 +664,8 @@ void processIO(char* data, DWORD len)
 -- FUNCTION:   processMicIO
 -- DATE:       14/04/2016
 -- REVISIONS:  
--- DESIGNER:   Joseph Tam-Huang
--- PROGRAMMER: Joseph Tam-Huang
+-- DESIGNER:   Dhivya Manohar
+-- PROGRAMMER: Dhivya Manohar
 --
 -- INTERFACE:  void processIO(char* data, DWORD len)
 --                  char* data: The data to process
@@ -644,7 +679,6 @@ void processIO(char* data, DWORD len)
 void processMicIO(char* data, DWORD len)
 {
     micD->audioOutputDevice->write(data,len);
-
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -673,9 +707,9 @@ void clientCleanup()
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   downloadFile
 -- DATE:       11/04/2016
--- REVISIONS:  Joseph Tam-Huang
--- DESIGNER:   Joseph Tam-Huang
--- PROGRAMMER: 
+-- REVISIONS:  
+-- DESIGNER:   Hank Lo
+-- PROGRAMMER: Hank Lo, Dhivya Manohar
 --
 -- INTERFACE:  void downloadFile(const char* filename)
 --                  const char* filename: The name of the file to download
@@ -696,9 +730,9 @@ void downloadFile(const char* filename)
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   sendThread
 -- DATE:       11/04/2016
--- REVISIONS:  Joseph Tam-Huang
--- DESIGNER:   Joseph Tam-Huang
--- PROGRAMMER: 
+-- REVISIONS:  
+-- DESIGNER:   Dhivya Manohar
+-- PROGRAMMER: Dhivya Manohar, Joseph Tam-Huang
 --
 -- INTERFACE:  DWORD WINAPI sendThread(LPVOID lpParameter)
 --                  

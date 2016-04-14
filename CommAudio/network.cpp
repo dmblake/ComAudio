@@ -1,5 +1,33 @@
 #include "network.h"
 
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:         network.cpp
+--
+-- PROGRAM:             CommAudio
+--
+-- FUNCTIONS:           void startWinsock()
+--                      void fillMyAddrStruct()
+--                      void fillMcastAddrStruct()
+--                      bool createUdpSocket(SOCKET* sock)
+--                      bool createTcpSocket(SOCKET* sock)
+--                      bool createAcceptSocket(SOCKET* listenSocket, SOCKET* acceptSocket)
+--                      void fillServerMcastStruct(McastStruct* mcastStruct)
+--                      void fillClientMcastStruct(McastStruct* mcastStruct)
+--                      void fillAddrStruct(SOCKADDR_IN* sockaddr, short family, unsigned long addr, unsigned short port)
+--
+-- DATE:                10/03/2016
+--           
+-- REVISIONS:           20/04/2016 - Added functions to fill sockaddr_in structures
+--                      12/03/2016 - Added functions to create udp and tcp sockets
+--
+-- DESIGNER:            Joseph Tam-Huang
+--
+-- PROGRAMMER:          Joseph Tam-Huan
+--
+-- NOTES:               
+-- Contains functions common to both server and client
+----------------------------------------------------------------------------------------------------------------------*/
+
 struct sockaddr_in myAddr;
 struct sockaddr_in mcastAddr;
 
