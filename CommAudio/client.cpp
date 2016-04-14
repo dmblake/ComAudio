@@ -23,7 +23,6 @@ extern struct sockaddr_in myAddr;
 
 BufferManager* bm;
 MainWindow* mw;
-Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
 bool playing = false;
 MicrophoneDialog *micD;
