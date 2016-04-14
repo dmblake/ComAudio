@@ -1,16 +1,85 @@
+/*
+ * Source file: buffermanager.cpp
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Functions:
+ *  BufferManager(int len, bool server);
+    static DWORD play(LPVOID param);
+    DWORD startPlayThread(LPVOID param);
+    void stop();
+    void pause();
+    void resume();
+    static DWORD loadFromFile(LPVOID param);
+    DWORD BufferManager::startReadThread(LPVOID instance);
+    bool BufferManager::setFilename(const char * fn);
+    BASS_FILEPROCS* getFP();
+    void mute();
+ *
+ * Notes:
+ * Handles the circular buffers, providing methods for clients to start threads
+ * Also handles feeding data into the BASS library via callback functions.
+ *
+ * This class was a major revision to how playback was handled.
+ * The majority of these functions are moved from various other parts of the program.
+ * For example, the threaded playback function was originally in client.cpp.
+ * All of the functionality has been moved to this class for ease of access.
+ */
+
 #include "buffermanager.h"
 
+
+/*
+ * Function: fileClose
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: void fileClose(void *user)
+ *              void * user : user data passed to the function
+ * Returns void
+ * Notes:
+ *  BASS library call back function when a file is closed/stream is ended
+ */
 void CALLBACK fileClose(void *user)
 {
     //((BufferManager*)user)->_isPlaying = false;
     //((BufferManager*)user)->_pb->clear();
 }
 
+/*
+ * Function: fileOPen
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: QWORD fileClose(void *user)
+ *              void * user : user data passed to the function
+ * Returns QWORD size of file; always 0 for streams
+ * Notes:
+ *  BASS library call back function when a stream is created.
+ *  Note that the return value is irrelevant for streams (could be used when reading from file)
+ */
 QWORD CALLBACK fileOpen(void *user)
 {
     return 0;
 }
 
+/*
+ * Function: fileRead
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: DWORD fileClose(void *buffer, DWORD length, void *user)
+ *              void * buffer : buffer to move data into
+ *              DWORD length : amount of data to read
+ *              void * user : a BufferManager object for access to buffers
+ * Returns number of bytes read
+ * Notes:
+ *  BASS library call back function when BASS needs data for the audio stream.
+ */
 DWORD CALLBACK fileRead(void *buffer, DWORD length, void *user)
 {
     DWORD bytesRead;
@@ -22,6 +91,20 @@ DWORD CALLBACK fileRead(void *buffer, DWORD length, void *user)
     return bytesRead;
 }
 
+/*
+ * Function: fileSeek
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: BOOL fileClose(QWORD offset, void *user)
+ *              QWORD offset : offset to move in
+ *              void * user : user data passed to the function
+ * Returns true always
+ * Notes:
+ *  BASS library call back function when trying to seek through a file.
+ * Unused with streams
+ */
 BOOL CALLBACK fileSeek(QWORD offset, void* user)
 {
     // this function could be used for file seeking
@@ -30,7 +113,19 @@ BOOL CALLBACK fileSeek(QWORD offset, void* user)
 }
 
 
-
+/*
+ * Function: BufferManager
+ * Date: 04/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: BufferManager(int len, bool server)
+ *              int len : size of circular buffers
+ *              bool server : whether the buffers belong to a server
+ * Returns: constructor, no returns
+ * Notes:
+ *  Creates the circular buffers for use in networking and audio playback.
+ */
 BufferManager::BufferManager(int len, bool server) :
     _pb(new CircularBuffer(len)), _net(new CircularBuffer(len)), _isServer(server), _isPlaying(false), _isSending(false)
 {
@@ -45,7 +140,21 @@ BufferManager::BufferManager(int len, bool server) :
 
 }
 
-// loads playback buffer from a file
+/*
+ * Function: loadFromFile
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: DWORD loadFromFile(LPVOID param)
+ *              LPVOID param : pointer to a buffer manager object
+ * Returns 0
+ * Notes:
+ *  Threaded function; reads from a file into the playback buffer specified
+ * by the BufferManager pointer passed in.
+ * File is specified by state within the same BufferManager.
+ * Suitable for both local playback and for sending over the net.
+ */
 DWORD BufferManager::loadFromFile(LPVOID param) {
     HANDLE hFile;
     wchar_t * wideStr;
@@ -100,6 +209,19 @@ DWORD BufferManager::loadFromFile(LPVOID param) {
     return 0;
 }
 
+/*
+ * Function: play(LPVOID param)
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: DWORD play(LPVOID param)
+ *              LPVOID param : pointer to a BufferManager object
+ * Returns 0
+ * Notes:
+ *  Threaded function; attempts to read from a playback buffer into the BASS library.
+ * Ends when the _isPlaying flagged is signalled, usually through the MainWindow interface
+ */
 DWORD BufferManager::play(LPVOID param) {
     BufferManager * bm = (BufferManager*)param;
     while (bm->_isPlaying) {
@@ -111,6 +233,8 @@ DWORD BufferManager::play(LPVOID param) {
             }
              else if (!BASS_ChannelPlay(bm->_str, FALSE)) {
                 //qDebug() << "Failed to play" << BASS_ErrorGetCode();
+            }else {
+                qDebug() << "Started playing";
             }
         }
         // if data is in the buffer, start any stopped stream
@@ -131,6 +255,8 @@ DWORD BufferManager::play(LPVOID param) {
                 }
                 else if (!BASS_ChannelPlay(bm->_str, FALSE)) {
                     qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                } else {
+                    qDebug() << "Started playing";
                 }
                 break;
             case -1:
@@ -162,16 +288,58 @@ DWORD BufferManager::play(LPVOID param) {
     return 0;
 }
 
+/*
+ * Function: getFP()
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: BASS_FILEPROCS* getFP()
+ * Returns a pointer to a structure of function pointers
+ * Notes:
+ *  BASS_FILEPROCS is a structure to hold a set of user-defined functions
+ *  for the BASS library to callback in various situations (ie. file open, close, reading and seeking)
+ */
 BASS_FILEPROCS* BufferManager::getFP() {
     return &_fp;
 }
 
+/*
+ * Function: startPlayThread(LPVOID param)
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: DWORD startPlayThread(LPVOID param)
+ *              LPVOID param : unused
+ * Returns 1 upon successful thread creation, 0 otherwise
+ * Notes:
+ *  Allows clients to start playback from the buffers.
+ * Because calling threaded functions that belong to a class requires the function to be static,
+ * this allows a client to invoke a thread from an object by passing the "this" pointer
+ * to the created thread.
+ */
 DWORD BufferManager::startPlayThread(LPVOID param) {
     HANDLE hThread = CreateThread(0, 0, BufferManager::play, this, 0, 0);
     qDebug() << "starting play thread";
     return (hThread != INVALID_HANDLE_VALUE ? 1 : 0);
 }
 
+/*
+ * Function: startReadThread(LPVOID instance)
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: DWORD startReadThread(LPVOID instance)
+ *              LPVOID param : unused
+ * Returns 1 upon successful thread creation, 0 otherwise
+ * Notes:
+ *  Allows clients to start file reading into the buffers.
+ * Because calling threaded functions that belong to a class requires the function to be static,
+ * this allows a client to invoke a thread from an object by passing the "this" pointer
+ * to the created thread.
+ */
 DWORD BufferManager::startReadThread(LPVOID instance) {
     BufferManager* bm = (BufferManager*)instance;
     HANDLE hThread = INVALID_HANDLE_VALUE;
@@ -183,6 +351,19 @@ DWORD BufferManager::startReadThread(LPVOID instance) {
     return (hThread != INVALID_HANDLE_VALUE ? 1 : 0);
 }
 
+/*
+ * Function: setFilename
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: bool setFilename(const char * fn)
+ *              const char * fn : filename to store
+ * Returns true if filename successfully copied, false otherwise
+ * Notes:
+ *  sets the filename in the buffer manager for future reference
+ * by file reading functions.
+ */
 bool BufferManager::setFilename(const char * fn) {
     if (fn != 0) {
         _filename = (char*)malloc(strlen(fn));
@@ -196,6 +377,17 @@ bool BufferManager::setFilename(const char * fn) {
     return false;
 }
 
+/*
+ * Function: stop
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: void stop()
+ * Returns void
+ * Notes:
+ *  stops playback and sending, also resets the stream and clears the playback buffer
+ */
 void BufferManager::stop() {
     switch(BASS_ChannelIsActive(_str)) {
     case BASS_ACTIVE_STOPPED:
@@ -213,6 +405,17 @@ void BufferManager::stop() {
     }
 }
 
+/*
+ * Function: pause
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: void pause()
+ * Returns void
+ * Notes:
+ *  pauses the BASS library
+ */
 void BufferManager::pause() {
     switch (BASS_ChannelIsActive(_str)) {
     case BASS_ACTIVE_PAUSED:
@@ -223,13 +426,34 @@ void BufferManager::pause() {
     }
 }
 
+/*
+ * Function: resume
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: void resume()
+ * Returns void
+ * Notes:
+ *  resumes the BASS library
+ */
 void BufferManager::resume() {
     if (BASS_ChannelIsActive(_str)== BASS_ACTIVE_PAUSED) {
         BASS_Start();
     }
 }
 
-// mute and unmute
+/*
+ * Function: mute
+ * Date: 4/12/2016
+ * Revision: v1
+ * Designer: Dylan Blake
+ * Programmer: Dylan Blake
+ * Interface: void mute()
+ * Returns void
+ * Notes:
+ *  mutes or unmutes the BASS audio
+ */
 void BufferManager::mute() {
     if (BASS_GetVolume() > 0) {
         BASS_SetVolume(0);
