@@ -76,7 +76,7 @@
      <string notr="true">border-color: rgba(255, 255, 255, 0);</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="server_tab">
      <attribute name="title">
@@ -580,8 +580,8 @@ color: rgb(255, 255, 255);</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="images.qrc"/>
   <include location="qdarkstyle/style.qrc"/>
+  <include location="images.qrc"/>
  </resources>
  <connections/>
 </ui>

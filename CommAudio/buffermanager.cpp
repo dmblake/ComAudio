@@ -104,7 +104,7 @@ DWORD BufferManager::play(LPVOID param) {
     BufferManager * bm = (BufferManager*)param;
     while (bm->_isPlaying) {
         // start stream
-        if (bm->_str == 0 && (bm->_pb->getDataAvailable() > BUF_LEN)) {
+        if (bm->_str == 0 && (bm->_pb->getDataAvailable() > BUF_LEN * 20)) {
 
             if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
                 //qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
@@ -114,7 +114,7 @@ DWORD BufferManager::play(LPVOID param) {
             }
         }
         // if data is in the buffer, start any stopped stream
-        if (bm->_isPlaying && (bm->_pb->getDataAvailable() > BUF_LEN )) {
+        if (bm->_isPlaying && (bm->_pb->getDataAvailable() > BUF_LEN * 20)) {
             int act = BASS_ChannelIsActive(bm->_str);
             switch (act) {
             case BASS_ACTIVE_PAUSED:
@@ -176,7 +176,7 @@ DWORD BufferManager::startReadThread(LPVOID instance) {
     BufferManager* bm = (BufferManager*)instance;
     HANDLE hThread = INVALID_HANDLE_VALUE;
     // filename must be set by calling function before this will successfully start a thread
-    if (bm->_isServer && bm->_filename != 0 && strlen(bm->_filename) > 0) {
+    if (bm->_filename != 0 && strlen(bm->_filename) > 0) {
         qDebug() << "Starting read thread";
         hThread = CreateThread(0, 0, BufferManager::loadFromFile, this, 0, 0);
     }

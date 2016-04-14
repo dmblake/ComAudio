@@ -54,6 +54,10 @@ private slots:
 
     void on_microphoneButton_client_clicked();
 
+    void on_playlistWidget_itemDoubleClicked(QListWidgetItem *item);
+
+    void on_playlistWidget_itemClicked(QListWidgetItem *item);
+
 private:
     Ui::MainWindow *ui;
     bool _server;

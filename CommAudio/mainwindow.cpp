@@ -58,6 +58,16 @@ MainWindow::MainWindow(bool server,bool client, QString ipaddr):_server(server),
         ui->tabWidget->setTabEnabled(0,false);
         setupTcpSocket(ipaddr);
         isServer = false;
+        ui->listWidget->clear();
+        std::string serverList = listAllFiles(".wav");
+        serverList += listAllFiles(".mp3");
+        serverList += listAllFiles(".raw");
+        std::vector<std::string> list = split(serverList, '\n');
+        for (std::string elem : list) {
+            QString str = QString::fromStdString(elem);
+            ui->playlistWidget->addItem(str);
+        }
+
     }
 
     // refresh file list
@@ -236,4 +246,23 @@ void MainWindow::on_microphoneButton_client_clicked()
     MicrophoneDialog c(this);
     c.setModal(true);
     c.exec();
+}
+
+void MainWindow::on_playlistWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+    if (!_bm._isPlaying) {
+        _bm._isPlaying = true;
+        _bm.startReadThread((LPVOID)&_bm);
+        _bm.startPlayThread((LPVOID)NULL);
+     } else {
+        // check for pause and resume
+        _bm.resume();
+    }
+}
+
+void MainWindow::on_playlistWidget_itemClicked(QListWidgetItem *item)
+{
+    std::string txt = item->text().toUtf8().constData();
+    std::vector<std::string> vec = split(txt, ',');
+    _bm.setFilename(vec[0].c_str());
 }
