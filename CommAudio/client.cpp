@@ -13,6 +13,7 @@ struct sockaddr_in peerAddr;
 struct sockaddr_in clientMcastAddr;
 HANDLE hMulticastThread;
 HANDLE hMicThread;
+HANDLE hControlThread;
 HANDLE hPlaybackThread;
 HANDLE hFileReadThread;
 McastStruct cMcastStruct;
@@ -193,6 +194,11 @@ bool setupTcpSocket(QString ipaddr)
 
     qDebug() << "Connected: Server Name: " << hp->h_name;
 
+    if ((hControlThread = CreateThread(NULL, 0, ControlChannelThread, NULL, 0, NULL)) == NULL)
+    {
+        qDebug() << "CreateThread() failed with error " << GetLastError();
+        return false;
+    } 
     // Close the socket right way for testing
     //closesocket(TcpSocket);
     return true;

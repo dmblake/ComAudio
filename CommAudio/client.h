@@ -18,7 +18,7 @@ struct ThreadSockStruct
 };
 
 void startFileTransfer();
-
+DWORD WINAPI ControlChannelThread(LPVOID lpParameter);
 void downloadFile(const char* filename);
 void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager* bm);
 DWORD WINAPI sendThread(LPVOID lpParameter);
