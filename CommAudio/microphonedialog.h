@@ -29,18 +29,15 @@ public:
 private slots:
     void on_startButton_clicked();
 
-    void on_pushButton_clicked();
+    void on_stopButton_clicked();
 
 private:
     Ui::MicrophoneDialog *ui;
-
     QAudioFormat format;
     QFile destinationFile;
     QAudioDeviceInfo info;
     QList<QAudioDeviceInfo> devicesAvailable;
     char * buffer;
-//    QAudioRecorder *audioRecorder;
-//    QAudioProbe *probe;
 };
 
 #endif // MICROPHONEDIALOG_H

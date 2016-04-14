@@ -9,7 +9,28 @@
 
 
 bool isServer;
-// hank revision
+
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:         MainWindow.cpp - The main window of the
+--
+-- PROGRAM:             CommAudio
+--
+-- FUNCTIONS:               explicit settingsDialog(QWidget *parent = 0);
+--                          ~settingsDialog();
+--                          void on_continueButton_clicked();
+--
+--
+-- DATE:                March 21st 2016 - Start/finished functionality for settings dialog
+--
+-- REVISIONS:           March 29th 2016 - Fixed crashing bug
+--
+-- DESIGNER:            Dhivya Manohar
+--
+-- PROGRAMMER:          Dhivya Manohar
+--
+-- NOTES:               This is the beginning of the program that prompts user to select for the type of user
+--                      they are.
+----------------------------------------------------------------------------------------------------------------------*/
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),

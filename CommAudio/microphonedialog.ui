@@ -50,7 +50,7 @@
     <string>Start Call</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="stopButton">
    <property name="geometry">
     <rect>
      <x>200</x>
