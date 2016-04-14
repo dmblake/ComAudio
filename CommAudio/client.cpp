@@ -28,8 +28,6 @@ CircularBuffer* networkBuffer;
 bool playing = false;
 MicrophoneDialog *micD;
 
-
-// hank
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   updateServerFiles
 -- DATE:       11/04/2016
@@ -57,8 +55,8 @@ std::vector<std::string> updateServerFiles()
 -- FUNCTION:   startClientMulticastSession
 -- DATE:       24/03/2016
 -- REVISIONS:  
--- DESIGNER:   
--- PROGRAMMER: 
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
 --
 -- INTERFACE:  void startClientMulticastSession(BufferManager* bufman)
 --                  BufferManager* bufman: A pointer to the buffer manager
@@ -98,8 +96,8 @@ void startClientMulticastSession(BufferManager* bufman)
 -- FUNCTION:   startClientMulticastSession
 -- DATE:       24/03/2016
 -- REVISIONS:  
--- DESIGNER:   
--- PROGRAMMER: 
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
 --
 -- INTERFACE:  void startClientMulticastSession(BufferManager* bufman)
 --                  BufferManager* bufman: A pointer to the buffer manager
@@ -193,8 +191,6 @@ bool setupTcpSocket(QString ipaddr)
 
     qDebug() << "Connected: Server Name: " << hp->h_name;
 
-    // Close the socket right way for testing
-    //closesocket(TcpSocket);
     return true;
 }
 
@@ -449,10 +445,6 @@ void CALLBACK ClientMicRecvWorkerRoutine(DWORD Error, DWORD BytesTransferred, LP
         return;
     }
 
-    //process io here
-    //SI->Buffer
-    //BytesTransferred
-    //qDebug() << "Received data" << SI->Buffer;
     processMicIO(SI->Buffer, BytesTransferred);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
@@ -613,8 +605,8 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 -- FUNCTION:   processIO
 -- DATE:       15/03/2016
 -- REVISIONS:  
--- DESIGNER:   
--- PROGRAMMER: 
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
 --
 -- INTERFACE:  void processIO(char* data, DWORD len)
 --                  char* data: The data to process
@@ -623,7 +615,7 @@ void CALLBACK ClientMcastWorkerRoutine(DWORD Error, DWORD BytesTransferred, LPWS
 -- RETURNS:    void
 --
 -- NOTES:
--- 
+-- Write data incoming data into the circular buffer
 ----------------------------------------------------------------------------------------------------------------------*/
 void processIO(char* data, DWORD len)
 {
@@ -633,13 +625,42 @@ void processIO(char* data, DWORD len)
     }
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   processMicIO
+-- DATE:       14/04/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  void processIO(char* data, DWORD len)
+--                  char* data: The data to process
+--                  DWORD len: The lenght of the data to process
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Process incoming microphone data and plays it.
+----------------------------------------------------------------------------------------------------------------------*/
 void processMicIO(char* data, DWORD len)
 {
-    //QByteArray* qba = new QByteArray(data, len);
     micD->audioOutputDevice->write(data,len);
 
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   clientCleanup
+-- DATE:       13/03/2016
+-- REVISIONS:  
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: Joseph Tam-Huang
+--
+-- INTERFACE:  void clientCleanup()
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Socket cleanup code.
+----------------------------------------------------------------------------------------------------------------------*/
 void clientCleanup()
 {
     qDebug() << "client cleanup called";
@@ -652,8 +673,8 @@ void clientCleanup()
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:   downloadFile
 -- DATE:       11/04/2016
--- REVISIONS:  
--- DESIGNER:   
+-- REVISIONS:  Joseph Tam-Huang
+-- DESIGNER:   Joseph Tam-Huang
 -- PROGRAMMER: 
 --
 -- INTERFACE:  void downloadFile(const char* filename)
@@ -662,22 +683,36 @@ void clientCleanup()
 -- RETURNS:    void
 --
 -- NOTES:
+-- Requestes a file from the server and downloads it locally.
 ----------------------------------------------------------------------------------------------------------------------*/
-void downloadFile(const char* filename){
+void downloadFile(const char* filename)
+{
     int size;
     std::vector<std::string> fns = split(filename, ',');
     size = std::stoi(fns[1]);
     getFileFromServer(TcpSocket, fns[0].c_str(), size);
 }
 
-DWORD WINAPI sendThread(LPVOID lpParameter){
-
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:   sendThread
+-- DATE:       11/04/2016
+-- REVISIONS:  Joseph Tam-Huang
+-- DESIGNER:   Joseph Tam-Huang
+-- PROGRAMMER: 
+--
+-- INTERFACE:  DWORD WINAPI sendThread(LPVOID lpParameter)
+--                  
+-- RETURNS:    void
+--
+-- NOTES:
+-- Requestes a file from the server and downloads it locally.
+----------------------------------------------------------------------------------------------------------------------*/
+DWORD WINAPI sendThread(LPVOID lpParameter)
+{
     MicrophoneDialog* md = (MicrophoneDialog *) lpParameter;
     QByteArray qba;
     qint64 len = 0;
     char temp[BUF_LEN];
-   //md->audioOutputDevice = md->audioOutput->start();
-
 
     while(md->isRecording){
         qba = md->audioInputDevice->readAll();
