@@ -1,5 +1,7 @@
 #include "buffermanager.h"
 
+int BufferManager::buflen = 0;
+
 void CALLBACK fileClose(void *user)
 {
     //((BufferManager*)user)->_isPlaying = false;
@@ -42,7 +44,6 @@ BufferManager::BufferManager(int len, bool server) :
     _fp.length = fileOpen;
     _fp.read = fileRead;
     _fp.seek = fileSeek;
-
 }
 
 // loads playback buffer from a file

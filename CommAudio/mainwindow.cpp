@@ -6,7 +6,7 @@
 #include "microphonedialog.h"
 #include <QFile>
 #include <QTextStream>
-
+#include "buffermanager.h"
 
 bool isServer;
 // hank revision
@@ -190,6 +190,8 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
     std::string txt = item->text().toUtf8().constData();
     std::vector<std::string> vec = split(txt, ',');
     _bm.setFilename(vec[0].c_str());
+    BufferManager::buflen = std::stoi(vec[1]);
+    qDebug() << BufferManager::buflen;
 }
 
 void MainWindow::on_downloadButton_clicked()

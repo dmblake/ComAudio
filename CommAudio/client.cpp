@@ -693,3 +693,9 @@ DWORD WINAPI sendThread(LPVOID lpParameter){
     }
     return 1;
 }
+
+DWORD WINAPI ControlChannelThread(LPVOID lpParameter)
+{   
+    handleControlMessages(TcpSocket);
+    return 0;
+}

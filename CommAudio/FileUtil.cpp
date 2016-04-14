@@ -27,7 +27,7 @@
 --  This class contains utility functions for file transfer related operations.
 ---------------------------------------------------------------------------------------*/
 #include "FileUtil.h"
-
+#include "buffermanager.h"
 /*---------------------------------------------------------------------------------------------------------------------
     -- FUNCTION: getFileFromServer
     --
@@ -138,15 +138,20 @@ void handleControlMessages(SOCKET sd) {
         std::string msg = rcvControlMessage(sd);
         std::vector<std::string> splitmsg = split(msg, '{');
 
-        if (splitmsg[0] == "updatelist") {
+        if (splitmsg[0] == "updatelist" && isServer) {
             qDebug() << "updatelist";
             std::string list = listAllFiles(".wav");
             list += listAllFiles(".mp3");
             sendMessage(sd, list.c_str());
-        } else if (splitmsg[0] == "file") {
+        } else if (splitmsg[0] == "file" && isServer) {
             qDebug() << "file";
             sendFile(sd, splitmsg[1].c_str());
-        } else {
+        } else if (splitmsg[0] == "buflen" && isServer) {
+            sendFile(sd, "buflen{" + BufferManager::buflen);
+            qDebug() << "server buflen = " << BufferManager::buflen;
+        } else if (splitmsg[0] == "buflen" && !isServer) {
+            BufferManager::buflen = std::stoi(splitmsg[1]);
+            qDebug() << "client buflen = " << BufferManager::buflen;
         }
     }
 }

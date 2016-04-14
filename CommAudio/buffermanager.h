@@ -25,6 +25,7 @@ public:
     bool BufferManager::setFilename(const char * fn);
     BASS_FILEPROCS* getFP();
     void mute();
+    static int buflen;
 private:
     char * _filename;
     BASS_FILEPROCS _fp;
