@@ -1,21 +1,14 @@
 #include "microphonedialog.h"
 #include "ui_microphonedialog.h"
 #include "client.h"
-#include <QAudioInput>
-#include <QIODevice>
-#include <QFile>
 
-QAudioInput *audio;
-QFile destinationFile;
-QAudioDeviceInfo info;
-QList<QAudioDeviceInfo> devicesAvailable;
-char * buffer;
+
 MicrophoneDialog::MicrophoneDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MicrophoneDialog)
 {
     ui->setupUi(this);
-
+    //MicrophoneDialog *md = this;
     info = QAudioDeviceInfo::defaultInputDevice();
 
     devicesAvailable = info.availableDevices(QAudio::AudioInput);
@@ -43,8 +36,16 @@ MicrophoneDialog::~MicrophoneDialog()
 void MicrophoneDialog::on_startButton_clicked()
 {
 
-//    destinationFile.setFileName("test.raw");
-//    destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
+    //destinationFile.setFileName("test.raw");
+    //destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
+
+    info = QAudioDeviceInfo::defaultInputDevice();
+
+    devicesAvailable = info.availableDevices(QAudio::AudioInput);
+    foreach (QAudioDeviceInfo device, devicesAvailable) {
+        QString devName = device.deviceName();
+        ui->inputBox->addItem(devName, QVariant(devName));
+    }
 
     QBuffer *iBuffer;
 //    buffer = (char*)malloc(MAX_BUF);
@@ -52,10 +53,13 @@ void MicrophoneDialog::on_startButton_clicked()
     QAudioFormat format;
     format.setSampleRate(8000);
     format.setCodec("audio/pcm");
+    format.setSampleSize(16);
+
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::UnSignedInt);
 
     int indexSelected = ui->inputBox->currentIndex();
+
 
     QAudioDeviceInfo devSelected = devicesAvailable.takeAt(indexSelected);
     qDebug() << devSelected.deviceName();
@@ -71,16 +75,20 @@ void MicrophoneDialog::on_startButton_clicked()
     qDebug()<<format.sampleType();
 
 
-    if (indexSelected == -1)
-        audio = new QAudioInput(format,this);
-    else
-        audio = new QAudioInput(devSelected,format,this);
+    if (indexSelected == -1) {
+        audioInput = new QAudioInput(format,this);
+        audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultInputDevice(),format, this);
+    }
+    else {
+        audioInput = new QAudioInput(devSelected,format,this);
+        audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultInputDevice(), format, this);
+    }
 
-
+    isRecording = true;
     iBuffer = new QBuffer();
-    iBuffer->open(QIODevice::WriteOnly);
-    audio->start(iBuffer);
-    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(),iBuffer->buffer().data());
+    iBuffer->open(QIODevice::ReadWrite);
+    audioInputDevice = audioInput->start();
+    startMicrophone(ui->ipAddress_textedit->toPlainText().toStdString().c_str(), this, &(((MainWindow*)parent())->_bm));
 
 
 }
@@ -88,6 +96,8 @@ void MicrophoneDialog::on_startButton_clicked()
 
 void MicrophoneDialog::on_pushButton_clicked()
 {
-    audio->stop();
+    isRecording = false;
+    audioInput->stop();
+    audioOutput->stop();
     //destinationFile.close();
 }

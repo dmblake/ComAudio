@@ -3,6 +3,10 @@
 
 #include <QDialog>
 #include <QBuffer>
+#include <QAudioOutput>
+#include <QAudioInput>
+#include <QIODevice>
+#include <QFile>
 #include "shared.h"
 
 namespace Ui {
@@ -15,6 +19,11 @@ class MicrophoneDialog : public QDialog
 
 public:
     explicit MicrophoneDialog(QWidget *parent = 0);
+    QIODevice *audioInputDevice;
+    QIODevice *audioOutputDevice;
+    QAudioInput *audioInput;
+    QAudioOutput *audioOutput;
+    bool isRecording = false;
     ~MicrophoneDialog();
 
 private slots:
@@ -24,6 +33,12 @@ private slots:
 
 private:
     Ui::MicrophoneDialog *ui;
+
+    QAudioFormat format;
+    QFile destinationFile;
+    QAudioDeviceInfo info;
+    QList<QAudioDeviceInfo> devicesAvailable;
+    char * buffer;
 //    QAudioRecorder *audioRecorder;
 //    QAudioProbe *probe;
 };

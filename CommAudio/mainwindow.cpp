@@ -157,6 +157,7 @@ void MainWindow::on_refreshButton_clicked()
     ui->listWidget->clear();
     std::string serverList = listAllFiles(".wav");
     serverList += listAllFiles(".mp3");
+    serverList += listAllFiles(".raw");
     std::vector<std::string> list = split(serverList, '\n');
     for (std::string elem : list) {
         QString str = QString::fromStdString(elem);

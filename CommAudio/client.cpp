@@ -26,6 +26,7 @@ MainWindow* mw;
 Playback* playbackBuffer;
 CircularBuffer* networkBuffer;
 bool playing = false;
+MicrophoneDialog *micD;
 
 
 // hank
@@ -110,9 +111,13 @@ void startClientMulticastSession(BufferManager* bufman)
 -- Creates and sets up the multicast socket and starts a worker thread to serivce 
 -- the completed I/O requests.
 ----------------------------------------------------------------------------------------------------------------------*/
-void startMicrophone(const char * ipaddress, char* microphoneBuf){
+void startMicrophone(const char * ipaddress, MicrophoneDialog *md, BufferManager * bufman)
+{
+    micD = md;
+    micD->audioOutputDevice = micD->audioOutput->start();
     ipAddr = ipaddress;
     qDebug() << ipAddr;
+    bm = bufman;
     if (!setUdpSocket())
     {
         qDebug() << "Mic Udp socket created";
@@ -126,14 +131,14 @@ void startMicrophone(const char * ipaddress, char* microphoneBuf){
         qDebug() << "Cannot fill peerAddr";
     }
 
-    if ((hMicThread = CreateThread(NULL, 0, ClientMicRecvThread, NULL,
+    if ((hMicThread = CreateThread(NULL, 0, ClientMicRecvThread, md,
         0, NULL)) == NULL)
     {
         qDebug() << "CreateMicRecvThread() failed with error " << GetLastError();
         return;
     }
 
-    CreateThread(NULL,0,sendThread,microphoneBuf,0,NULL);
+    CreateThread(NULL,0,sendThread,md,0,NULL);
 }
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -181,6 +186,8 @@ bool setupTcpSocket(QString ipaddr)
     {
         qDebug() << "Failed to connect to the server" << WSAGetLastError();
         closesocket(TcpSocket);
+
+        //WSACleanup();
         return false;
     }
 
@@ -256,7 +263,6 @@ bool setUdpSocket()
         closesocket(UdpSocket);
         return false;
     }
-
     if (bind(UdpSocket, (PSOCKADDR)&myAddr, sizeof(sockaddr_in)) == SOCKET_ERROR)
     {
         qDebug() << "bind() udp failed with error" << WSAGetLastError();
@@ -329,6 +335,7 @@ bool setupClientMulticastSocket()
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI ClientMicRecvThread(LPVOID lpParameter)
 {
+    MicrophoneDialog *md = (MicrophoneDialog*)lpParameter;
     qDebug() << "client mcast thread started";
     DWORD Index;
     DWORD Flags = 0;
@@ -386,13 +393,18 @@ DWORD WINAPI ClientMicRecvThread(LPVOID lpParameter)
             qDebug() << "index = wait io completion";
             continue;
         }
+        else if (!micD->isRecording){
+            qDebug() << "error socket closed";
+            closesocket(UdpSocket);
+            ExitThread(3);
+        }
         else
         {
             // A bad error occurred: stop processing!
             // If we were also processing an event
             // object, this could be an index to the event array.
             qDebug() << "error socket closed";
-            closesocket(ClientMulticastSocket);
+            closesocket(UdpSocket);
             ExitThread(3);
         }
     }
@@ -441,7 +453,7 @@ void CALLBACK ClientMicRecvWorkerRoutine(DWORD Error, DWORD BytesTransferred, LP
     //SI->Buffer
     //BytesTransferred
     //qDebug() << "Received data" << SI->Buffer;
-    processIO(SI->Buffer, BytesTransferred);
+    processMicIO(SI->Buffer, BytesTransferred);
 
     ZeroMemory(&(SI->Overlapped), sizeof(WSAOVERLAPPED));
 
@@ -527,6 +539,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             //qDebug() << "index = wait io completion";
             continue;
         }
+
         else
         {
             // A bad error occurred: stop processing!
@@ -620,6 +633,13 @@ void processIO(char* data, DWORD len)
     }
 }
 
+void processMicIO(char* data, DWORD len)
+{
+    //QByteArray* qba = new QByteArray(data, len);
+    micD->audioOutputDevice->write(data,len);
+
+}
+
 void clientCleanup()
 {
     qDebug() << "client cleanup called";
@@ -652,18 +672,24 @@ void downloadFile(const char* filename){
 
 DWORD WINAPI sendThread(LPVOID lpParameter){
 
-    char * sendBuffer = (char *) lpParameter;
+    MicrophoneDialog* md = (MicrophoneDialog *) lpParameter;
+    QByteArray qba;
+    qint64 len = 0;
+    char temp[BUF_LEN];
+   //md->audioOutputDevice = md->audioOutput->start();
 
-    while(1){
-        //send function
-    }
-    return 1;
-}
 
-DWORD WINAPI receiveThread(LPVOID lpParameter){
-
-    while(1){
-        //receive function
+    while(md->isRecording){
+        qba = md->audioInputDevice->readAll();
+        int nRet;
+        //md->audioOutputDevice->write(qba);
+        if (qba.length() > 0) {
+            nRet = sendto(UdpSocket, qba, qba.length(), 0, (SOCKADDR *)&(peerAddr), sizeof(sockaddr_in));
+            if (nRet < 0)
+            {
+                qDebug() << "sendto failed" << WSAGetLastError();
+            }
+        }
     }
     return 1;
 }

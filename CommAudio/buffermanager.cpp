@@ -104,7 +104,7 @@ DWORD BufferManager::play(LPVOID param) {
     BufferManager * bm = (BufferManager*)param;
     while (bm->_isPlaying) {
         // start stream
-        if (bm->_str == 0 && (bm->_pb->getDataAvailable() > BUF_LEN*3)) {
+        if (bm->_str == 0 && (bm->_pb->getDataAvailable() > BUF_LEN)) {
 
             if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
                 //qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
@@ -114,7 +114,7 @@ DWORD BufferManager::play(LPVOID param) {
             }
         }
         // if data is in the buffer, start any stopped stream
-        if (bm->_isPlaying && (bm->_pb->getDataAvailable() > BUF_LEN*3 )) {
+        if (bm->_isPlaying && (bm->_pb->getDataAvailable() > BUF_LEN )) {
             int act = BASS_ChannelIsActive(bm->_str);
             switch (act) {
             case BASS_ACTIVE_PAUSED:
@@ -127,10 +127,10 @@ DWORD BufferManager::play(LPVOID param) {
             case BASS_ACTIVE_STOPPED:
                 // play
                 if (!(bm->_str = BASS_StreamCreateFileUser(STREAMFILE_BUFFER, BASS_STREAM_BLOCK, bm->getFP(), bm))) {
-                    //qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
+                    qDebug() << "Failed to create stream" << BASS_ErrorGetCode();
                 }
                 else if (!BASS_ChannelPlay(bm->_str, FALSE)) {
-                    //qDebug() << "Failed to play" << BASS_ErrorGetCode();
+                    qDebug() << "Failed to play" << BASS_ErrorGetCode();
                 }
                 break;
             case -1:
