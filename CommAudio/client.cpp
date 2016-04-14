@@ -528,7 +528,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
         qDebug() << "event created ok";
     }
 
-    while (TRUE)
+    while (bm->_isPlaying)
     {
         //qDebug() << "wait for multiple event";
         Index = WSAWaitForMultipleEvents(1, EventArray, FALSE, 10000, TRUE);
@@ -550,6 +550,7 @@ DWORD WINAPI ClientMcastThread(LPVOID lpParameter)
             ExitThread(3);
         }
     }
+    qDebug() << "exiting client mcast thread";
 }
 
 /*------------------------------------------------------------------------------------------------------------------
